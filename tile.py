@@ -15,24 +15,38 @@ class Tile:
 
 class Map:
     map: dict
+    chunck_size: int
 
     def __init__( self ):
         self.map = dict()
-    def __getitem__( self, name ):
-        return self.map[name]
+        self.chunck_size = 21
 
-    def generate_chunck( self, position ): # every chunck is 20x20 tiles
-        for i in range(-8, 8):
-            for j in range(-8, 8):
+    def __getitem__( self, name ):
+        if name not in list(self.map):
+            x, y = name.split(",")
+            x, y = int(x), int(y)
+            self.load_chunck( [x, y] )
+        return self.map[name]
+    def get_chunck_size( self ):
+        return self.chunck_size
+
+    def generate_chunck( self, position ): 
+        cs = self.chunck_size
+        chunck_center = [0, 0] 
+        chunck_center[0] = (position[0] + cs//2) // cs
+        chunck_center[1] = (position[1] + cs//2) // cs
+        for i in range(-cs//2, cs//2 + 1):
+            for j in range(-cs//2, cs//2 + 1):
                 # generating flat chunck (temporary)
                 tile = Tile( "default_basic_tile", 0 )
-                self.map[ str(position[0]*20 + i) + "," + str(position[1]*20 + j) ] = tile 
+                self.map[ str(chunck_center[0]*cs + i) + "," 
+                        + str(chunck_center[1]*cs + j) ] = tile 
         ...
 
     def load_chunck( self, position ):
         # if chunck hasn't been saved (it wasn't generated)
+        # TEMP
         self.generate_chunck( position )
-        ...
     def save_chunck( self ): # ...
         ...
     ...
