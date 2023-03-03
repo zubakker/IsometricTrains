@@ -1,6 +1,10 @@
+from constructions import Rail
+
+
 class Tile:
     height: int
     name: str
+    constructions: list
 
     def __init__( self, name, height ):
         self.name = name
@@ -30,6 +34,11 @@ class Map:
     def get_chunck_size( self ):
         return self.chunck_size
 
+    def set_tile( self, pos, tile ):
+        self.map[pos][0] = tile 
+    def set_construction(self, pos, const ):
+        self.map[pos][1] = const
+
     def generate_chunck( self, position ): 
         cs = self.chunck_size
         chunck_center = [0, 0] 
@@ -40,7 +49,7 @@ class Map:
                 # generating flat chunck (temporary)
                 tile = Tile( "default_basic_tile", 0 )
                 self.map[ str(chunck_center[0]*cs + i) + "," 
-                        + str(chunck_center[1]*cs + j) ] = tile 
+                        + str(chunck_center[1]*cs + j) ] = [tile , None]
         ...
 
     def load_chunck( self, position ):

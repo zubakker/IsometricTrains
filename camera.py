@@ -11,8 +11,10 @@ class Camera:
     position: [float, float]
     zoom: float
     texture_pack: dict
-    screen: pygame.display
+    background: pygame.Surface
+    screen: pygame.Surface
     default_tile_size: [float, float]
+    bg_updated: bool
 
     def __init__( self, position, zoom, screen, map ):
         self.position = position
@@ -20,6 +22,11 @@ class Camera:
         self.screen = screen
         self.texture_pack = dict()
         self.load_texture_pack( "default" )
+
+        self.bg_updated = False
+        self.background = pygame.Surface( (SCREEN_SIZE[0]*3, SCREEN_SIZE[1]*3) )
+        self.bg_position = [0, 0]
+
         chunck_size = map.get_chunck_size()
         map.load_chunck( [position[0]//chunck_size, position[1]//chunck_size] )
 
@@ -27,14 +34,44 @@ class Camera:
         ...
 
     def load_texture_pack( self, name ):
-        full_name = "texture_packs/tiles/" + name
-        tile_textures = os.listdir( full_name )
+        tile_name = "texture_packs/tiles/" + name
+        const_name = "texture_packs/constructions/" + name
+        tile_textures = os.listdir( tile_name )
+        const_textures = os.listdir( const_name )
         for texture in tile_textures:
-            self.texture_pack[ texture[:-4] ] = pygame.image.load(full_name +"/"+ texture)
+            self.texture_pack[ texture[:-4] ] = pygame.image.load(tile_name +"/"+ texture)
+        for texture in const_textures:
+            self.texture_pack[ texture[:-4] ] = pygame.image.load(const_name +"/"+ texture)
+        ...
+    def get_texture( self, name ):
+        if name not in list(self.texture_pack):
+            return 0
+        return self.texture_pack[name]
+    def get_default_size(self):
+        return self.default_tile_size
+    def get_position( self):
+        return self.position
+
+    def render( self, map: Map ):
+        if not self.bg_updated:
+            self.render_bg( map )
+
+        dx = self.position[0] - self.bg_position[0]
+        dy = self.position[1] - self.bg_position[1]
+        posx = -SCREEN_SIZE[0] - self.default_tile_size[0]*dx*self.zoom
+        posy = -SCREEN_SIZE[1] - self.default_tile_size[1]*dy*self.zoom
+        if posx > 0 or posy > 0:
+            self.render_bg( map )
+        if posx + SCREEN_SIZE[0]*2 < 0 or posy + SCREEN_SIZE[1]*2 < 0:
+            self.render_bg( map )
+        self.screen.blit( self.background,
+                (-SCREEN_SIZE[0] - self.default_tile_size[0]*dx*self.zoom,
+                -SCREEN_SIZE[1] - self.default_tile_size[1]*dy*self.zoom) )
+        # -- Rendering trains -- 
         ...
     
-    def render( self, map: Map ):
-        # === rendering tiles ===
+    def render_bg( self, map: Map ):
+        self.background.fill((0, 0, 0))
         # -- Define which coords are on screen --
         screen_w_tiles = SCREEN_SIZE[0] / (self.default_tile_size[0] * self.zoom)
         screen_h_tiles = SCREEN_SIZE[1] / (self.default_tile_size[1] * self.zoom)
@@ -44,29 +81,68 @@ class Camera:
         y_0 = x_0 # TEMP
         y_1 = x_1 # TEMP
 
-        swt = int(screen_w_tiles)
-        sht = int(screen_w_tiles) # TEMP
+        swt = int(screen_w_tiles + 0.99)
+        sht = int(screen_w_tiles + 0.99) # TEMP
+        # === rendering tiles ===
         for i in range( y_0-sht, y_1+sht+1 ): 
                 # -sht/swt needed to load 3 chuncks around center of the screen
             for j in range( x_0-swt, x_1+swt+1 ):
-                position = [ j - self.position[0], i - self.position[1] ]
-                tile = map[ str(j)+","+str(i) ]
+                position = [ j - self.position[0]*2, i - self.position[1]*2 ]
+                tile = map[ str(j)+","+str(i) ][0]
                 position[1] += tile.get_height()*2
                 tile_img = self.texture_pack[ tile.get_name() ] 
                 size_x = self.default_tile_size[0] * self.zoom
                 size_y = self.default_tile_size[1] * self.zoom
                 tile_img_scaled = pygame.transform.scale( tile_img, (size_x, size_y) )
                 pos_x = (position[0]/2 + i/2 -0.5) * self.default_tile_size[0] * self.zoom
-                pos_y = (position[1] + j/2 -3*i/2) * self.default_tile_size[1] * self.zoom
-                self.screen.blit( tile_img_scaled, 
-                                    (pos_x + SCREEN_SIZE[0]/2,
-                                     pos_y + SCREEN_SIZE[1]/2)
+                pos_y = (position[1] + j/2 -3*i/2 -0.5) * self.default_tile_size[1] * self.zoom
+                self.background.blit( tile_img_scaled, 
+                                    (pos_x + 3*SCREEN_SIZE[0]/2,
+                                     pos_y + 3*SCREEN_SIZE[1]/2)
                                 )
-        # === rendering trains ===
-        ...
+        # === rendering constructions ===
+        for i in range( y_0-sht, y_1+sht+1 ): 
+                # -sht/swt needed to load 3 chuncks around center of the screen
+            for j in range( x_0-swt, x_1+swt+1 ):
+                position = [ j - self.position[0]*2, i - self.position[1]*2 ]
+                const = map[ str(j)+","+str(i) ][1]
+                tile = map[ str(j)+","+str(i) ][0]
+                if not const:
+                    continue
+                position[1] += tile.get_height()*2
+                const_img = self.texture_pack[ const.get_name_facing() ] 
+                size_x = self.default_tile_size[0] * self.zoom
+                size_y = self.default_tile_size[1] * self.zoom
+                const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
+                pos_x = (position[0]/2 + i/2 -0.5) * self.default_tile_size[0] * self.zoom
+                pos_y = (position[1] + j/2 -3*i/2 -0.5) * self.default_tile_size[1] * self.zoom
+                self.background.blit( const_img_scaled, 
+                                    (pos_x + 3*SCREEN_SIZE[0]/2,
+                                     pos_y + 3*SCREEN_SIZE[1]/2)
+                                )
+        self.bg_position = [self.position[0], self.position[1]]
+        self.bg_updated = True
 
-    def move( self, rel_pos ): # ...
+    def get_tile( self, screen_coords ):
+        scale = self.default_tile_size[1] * self.zoom
+        tx = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
+        ty = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
+        print(tx, ty)
+        tx += (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]*2
+        ty -= (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]*2
+
+        return str(round(tx)) + "," + str(round(ty))
+
+
+    def move( self, rel_pos ):
         self.position[0] += rel_pos[0]*self.zoom
         self.position[1] += rel_pos[1]*self.zoom
-        # if y_0 or y_1 or x_0 or x_1 not in map 
-        #   (not loaded, bc camera moved too far)
+        # self.bg_updated = False
+        # TODO make updating bg only when camera moves out the bg image boundaries
+    def zoom_in( self, amount ):
+        if amount > 0:
+            self.zoom *= 1.2
+        if amount < 0:
+            self.zoom /= 1.2
+        print(self.zoom)
+        self.bg_updated = False
