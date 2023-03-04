@@ -1,0 +1,76 @@
+{
+    "rail types": {
+	"default_junction_rail_NES": 
+	    {
+		"come_from": ["N", "E", "S"],
+		"rotate_to": { "E": "N" }
+	    },
+	"default_junction_rail_NESW":
+	    {
+		"come_from": ["N", "E", "S", "W"],
+		"rotate_to": {}
+	    },
+	"default_one_way_rail_E":
+	    {
+		"come_from": ["W"],
+		"rotate_to": {}
+	    },
+	"default_one_way_rail_N":
+	    {
+		"come_from": ["S"],
+		"rotate_to": {}
+	    },
+	"default_one_way_rail_S":
+	    {
+		"come_from": ["N"],
+		"rotate_to": {}
+	    },
+	"default_one_way_rail_W":
+	    {
+		"come_from": ["E"],
+		"rotate_to": {}
+	    },
+	"default_rail_E":
+	    {
+		"come_from": ["E", "W"],
+		"rotate_to": {}
+	    },
+	"default_rail_NE":
+	    {
+		"come_from": ["N", "E"],
+		"rotate_to": { 
+				"E": "N",
+				"N": "E"
+		}
+	    },
+	"default_rail_N":
+	    {
+		"come_from": ["N", "S"],
+		"rotate_to": {}
+	    },
+	"default_rail_NW":
+	    {
+		"come_from": ["N", "W"],
+		"rotate_to": { 
+				"W": "N",
+				"N": "W"
+		}
+	    },
+	"default_rail_SE":
+	    {
+		"come_from": ["S", "E"],
+		"rotate_to": { 
+				"E": "S",
+				"S": "E"
+		}
+	    },
+	"default_rail_SW":
+	    {
+		"come_from": ["S", "W"],
+		"rotate_to": { 
+				"W": "S",
+				"S": "W"
+		}
+	    }
+    }
+}

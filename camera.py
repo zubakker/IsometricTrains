@@ -36,12 +36,16 @@ class Camera:
     def load_texture_pack( self, name ):
         tile_name = "texture_packs/tiles/" + name
         const_name = "texture_packs/constructions/" + name
+        cart_name = "texture_packs/carts/" + name
         tile_textures = os.listdir( tile_name )
         const_textures = os.listdir( const_name )
+        cart_textures = os.listdir( cart_name )
         for texture in tile_textures:
             self.texture_pack[ texture[:-4] ] = pygame.image.load(tile_name +"/"+ texture)
         for texture in const_textures:
             self.texture_pack[ texture[:-4] ] = pygame.image.load(const_name +"/"+ texture)
+        for texture in cart_textures:
+            self.texture_pack[ texture[:-4] ] = pygame.image.load(cart_name +"/"+ texture)
         ...
     def get_texture( self, name ):
         if name not in list(self.texture_pack):
@@ -52,7 +56,7 @@ class Camera:
     def get_position( self):
         return self.position
 
-    def render( self, map: Map ):
+    def render( self, map, trains_list ):
         if not self.bg_updated:
             self.render_bg( map )
 
@@ -68,6 +72,24 @@ class Camera:
                 (-SCREEN_SIZE[0] - self.default_tile_size[0]*dx*self.zoom,
                 -SCREEN_SIZE[1] - self.default_tile_size[1]*dy*self.zoom) )
         # -- Rendering trains -- 
+        for cart in trains_list:
+            x, y = cart.get_pos()
+            x -= 1
+            y += 1
+            position = [ x - self.position[0]*2, y - self.position[1]*2 ]
+            tile = map[ str(int(x))+","+str(int(y)) ][0]
+            position[1] += tile.get_height()*2
+            cart_img = self.texture_pack[ cart.get_name_facing() ] 
+            size_x = self.default_tile_size[0] * self.zoom
+            size_y = self.default_tile_size[1] * self.zoom*2
+            cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
+            pos_x = (position[0]/2 + y/2 -0.5) * self.default_tile_size[0] * self.zoom
+            pos_y = (position[1] + x/2 -3*y/2 -0.5) * self.default_tile_size[1] * self.zoom
+            self.screen.blit( cart_img_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2)
+                            )
+
         ...
     
     def render_bg( self, map: Map ):
@@ -106,9 +128,9 @@ class Camera:
             for j in range( x_0-swt, x_1+swt+1 ):
                 position = [ j - self.position[0]*2, i - self.position[1]*2 ]
                 const = map[ str(j)+","+str(i) ][1]
-                tile = map[ str(j)+","+str(i) ][0]
                 if not const:
                     continue
+                tile = map[ str(j)+","+str(i) ][0]
                 position[1] += tile.get_height()*2
                 const_img = self.texture_pack[ const.get_name_facing() ] 
                 size_x = self.default_tile_size[0] * self.zoom
@@ -127,7 +149,6 @@ class Camera:
         scale = self.default_tile_size[1] * self.zoom
         tx = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
         ty = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
-        print(tx, ty)
         tx += (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]*2
         ty -= (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]*2
 
@@ -144,5 +165,4 @@ class Camera:
             self.zoom *= 1.2
         if amount < 0:
             self.zoom /= 1.2
-        print(self.zoom)
         self.bg_updated = False

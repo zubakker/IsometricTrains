@@ -1,4 +1,4 @@
-from constructions import Rail
+from construction import Rail
 
 
 class Tile:
