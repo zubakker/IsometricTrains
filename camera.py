@@ -105,19 +105,32 @@ class Camera:
 
         swt = int(screen_w_tiles + 0.99)
         sht = int(screen_w_tiles + 0.99) # TEMP
+
         # === rendering tiles ===
-        for i in range( y_0-sht, y_1+sht+1 ): 
+        for i in range( y_1+sht, y_0-sht-1, -1 ): 
                 # -sht/swt needed to load 3 chuncks around center of the screen
             for j in range( x_0-swt, x_1+swt+1 ):
-                position = [ j - self.position[0]*2, i - self.position[1]*2 ]
                 tile = map[ str(j)+","+str(i) ][0]
-                position[1] += tile.get_height()*2
+                f = i + tile.get_height()
+                k = j - tile.get_height()
+                # converting isometric coords into coords on screen
+                position = [ k - self.position[0]*2 + f - 1,
+                             f - self.position[1]*2 + k/2 -3*f/2 - 0.5 ]
                 tile_img = self.texture_pack[ tile.get_name() ] 
                 size_x = self.default_tile_size[0] * self.zoom
                 size_y = self.default_tile_size[1] * self.zoom
                 tile_img_scaled = pygame.transform.scale( tile_img, (size_x, size_y) )
-                pos_x = (position[0]/2 + i/2 -0.5) * self.default_tile_size[0] * self.zoom
-                pos_y = (position[1] + j/2 -3*i/2 -0.5) * self.default_tile_size[1] * self.zoom
+                pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
+                pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                if tile.get_height():
+                    bg_tile = self.texture_pack[ "default_bg_height" ] # TEMP
+                    height = tile.get_height() + 1
+                    bg_tile_scaled = pygame.transform.scale( bg_tile, (size_x, height*size_y))
+                    dy = self.default_tile_size[1] * self.zoom / 2
+                    self.background.blit( bg_tile_scaled, 
+                                        (pos_x + 3*SCREEN_SIZE[0]/2,
+                                         pos_y + dy + 3*SCREEN_SIZE[1]/2)
+                                    )
                 self.background.blit( tile_img_scaled, 
                                     (pos_x + 3*SCREEN_SIZE[0]/2,
                                      pos_y + 3*SCREEN_SIZE[1]/2)
@@ -126,18 +139,21 @@ class Camera:
         for i in range( y_0-sht, y_1+sht+1 ): 
                 # -sht/swt needed to load 3 chuncks around center of the screen
             for j in range( x_0-swt, x_1+swt+1 ):
-                position = [ j - self.position[0]*2, i - self.position[1]*2 ]
+                tile = map[ str(j)+","+str(i) ][0]
                 const = map[ str(j)+","+str(i) ][1]
                 if not const:
                     continue
-                tile = map[ str(j)+","+str(i) ][0]
-                position[1] += tile.get_height()*2
+                f = i + tile.get_height()
+                k = j - tile.get_height()
+                # converting isometric coords into coords on screen
+                position = [ k - self.position[0]*2 + f - 1,
+                             f - self.position[1]*2 + k/2 -3*f/2 - 0.5 ]
                 const_img = self.texture_pack[ const.get_name_facing() ] 
                 size_x = self.default_tile_size[0] * self.zoom
                 size_y = self.default_tile_size[1] * self.zoom
                 const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
-                pos_x = (position[0]/2 + i/2 -0.5) * self.default_tile_size[0] * self.zoom
-                pos_y = (position[1] + j/2 -3*i/2 -0.5) * self.default_tile_size[1] * self.zoom
+                pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
+                pos_y = position[1] * self.default_tile_size[1] * self.zoom
                 self.background.blit( const_img_scaled, 
                                     (pos_x + 3*SCREEN_SIZE[0]/2,
                                      pos_y + 3*SCREEN_SIZE[1]/2)
@@ -158,8 +174,6 @@ class Camera:
     def move( self, rel_pos ):
         self.position[0] += rel_pos[0]*self.zoom
         self.position[1] += rel_pos[1]*self.zoom
-        # self.bg_updated = False
-        # TODO make updating bg only when camera moves out the bg image boundaries
     def zoom_in( self, amount ):
         if amount > 0:
             self.zoom *= 1.2

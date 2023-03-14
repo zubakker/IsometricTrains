@@ -14,6 +14,10 @@ class Tile:
         return self.name
     def get_height( self ):
         return self.height
+    def change_height( self, change ):
+        self.height += change
+    def change_name( self, name ):
+        self.name = name
     ...
 
 

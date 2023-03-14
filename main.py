@@ -2,7 +2,7 @@ import time
 import pygame
 
 
-from tile import Map
+from tile import Map, Tile
 from camera import Camera
 from cart import Cart
 from construction import load_construction_pack
@@ -15,7 +15,11 @@ screen = pygame.display.set_mode( SCREEN_SIZE )
 map = Map()
 cam = Camera( [0, 0], 1, screen, map )
 
+
+
 # TEMP
+# tile = Tile( "default_bright_tile", 1 )
+# map.set_tile( "1,1", tile )
 cart = Cart( "default_cart", "N", [0, 0] )
 trains_list = list()
 trains_list.append(cart)

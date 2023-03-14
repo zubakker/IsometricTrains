@@ -10,14 +10,14 @@
 		"come_from": ["N", "E", "S", "W"],
 		"rotate_to": {}
 	    },
-	"default_one_way_rail_E":
-	    {
-		"come_from": ["W"],
-		"rotate_to": {}
-	    },
 	"default_one_way_rail_N":
 	    {
 		"come_from": ["S"],
+		"rotate_to": {}
+	    },
+	"default_one_way_rail_E":
+	    {
+		"come_from": ["W"],
 		"rotate_to": {}
 	    },
 	"default_one_way_rail_S":
