@@ -30,6 +30,13 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                         map[ pos ][0].change_height(1)# .set_tile( pos, tile )
                         map[ pos ][0].change_name( selected_tile )# .set_tile( pos, tile )
                         cam.render_bg( map )
+                if event.button == 3: # right
+                    print('hi')
+                    mouse_pos = pygame.mouse.get_pos()
+                    pos = cam.get_tile( mouse_pos )
+                    map[ pos ][0].change_height(-1)# .set_tile( pos, tile )
+                    map[ pos ][0].change_name( selected_tile )# .set_tile( pos, tile )
+                    cam.render_bg( map )
                         
                 if event.button == 4: # scroll up
                     cam.zoom_in(1)
@@ -50,13 +57,13 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                     ...
         keys = pygame.key.get_pressed()
         if keys[ pygame.K_LEFT ]:
-            cam.move( [-0.333, 0] )
+            cam.move( [-0.0333, 0] )
         if keys[ pygame.K_RIGHT]:
-            cam.move( [0.333, 0] )
+            cam.move( [0.0333, 0] )
         if keys[ pygame.K_UP ]:
-            cam.move( [0, -0.333] )
+            cam.move( [0, -0.0333] )
         if keys[ pygame.K_DOWN ]:
-            cam.move( [0, 0.333] )
+            cam.move( [0, 0.0333] )
 
         for train in trains_list:
             train.update( map )

@@ -143,14 +143,16 @@ class Camera:
                 const = map[ str(j)+","+str(i) ][1]
                 if not const:
                     continue
-                f = i + tile.get_height()
-                k = j - tile.get_height()
+                displacement = const.get_displacement()
+                f = i + tile.get_height() + displacement[0]
+                k = j - tile.get_height() + displacement[1]
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1]*2 + k/2 -3*f/2 - 0.5 ]
                 const_img = self.texture_pack[ const.get_name_facing() ] 
-                size_x = self.default_tile_size[0] * self.zoom
-                size_y = self.default_tile_size[1] * self.zoom
+                scale = const.get_texture_scale()
+                size_x = self.default_tile_size[0] * self.zoom * scale[0]
+                size_y = self.default_tile_size[1] * self.zoom * scale[1]
                 const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
                 pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
                 pos_y = position[1] * self.default_tile_size[1] * self.zoom

@@ -1,39 +1,81 @@
 {
     "rail types": {
+	"default_up_rail_N":
+	    {
+		"come_from": ["S", "N"],
+		"rotate_to": { },
+		"texture_scale": [1,2],
+		"displacement": [1,-1]
+	    },
+	"default_up_rail_S":
+	    {
+		"come_from": ["S", "N"],
+		"rotate_to": { },
+		"texture_scale": [1,1],
+		"displacement": [0.5,-0.5]
+	    },
+	"default_up_rail_W":
+	    {
+		"come_from": ["E", "W"],
+		"rotate_to": { },
+		"texture_scale": [1,1],
+		"displacement": [0.5,-0.5]
+	    },
+	"default_up_rail_E":
+	    {
+		"come_from": ["E", "W"],
+		"rotate_to": { },
+		"texture_scale": [1,2],
+		"displacement": [1,-1]
+	    },
 	"default_junction_rail_NES": 
 	    {
 		"come_from": ["N", "E", "S"],
-		"rotate_to": { "E": "N" }
+		"rotate_to": { "E": "N" },
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_junction_rail_NESW":
 	    {
 		"come_from": ["N", "E", "S", "W"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_one_way_rail_N":
 	    {
 		"come_from": ["S"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_one_way_rail_E":
 	    {
 		"come_from": ["W"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_one_way_rail_S":
 	    {
 		"come_from": ["N"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_one_way_rail_W":
 	    {
 		"come_from": ["E"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_rail_E":
 	    {
 		"come_from": ["E", "W"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_rail_NE":
 	    {
@@ -41,12 +83,16 @@
 		"rotate_to": { 
 				"E": "N",
 				"N": "E"
-		}
+		},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_rail_N":
 	    {
 		"come_from": ["N", "S"],
-		"rotate_to": {}
+		"rotate_to": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_rail_NW":
 	    {
@@ -54,7 +100,9 @@
 		"rotate_to": { 
 				"W": "N",
 				"N": "W"
-		}
+		},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_rail_SE":
 	    {
@@ -62,7 +110,9 @@
 		"rotate_to": { 
 				"E": "S",
 				"S": "E"
-		}
+		},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    },
 	"default_rail_SW":
 	    {
@@ -70,7 +120,9 @@
 		"rotate_to": { 
 				"W": "S",
 				"S": "W"
-		}
+		},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
 	    }
     }
 }
