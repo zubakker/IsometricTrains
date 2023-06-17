@@ -29,55 +29,25 @@ class Cart:
                             "E": "W",
                             "W": "E"
                         }
+        x, y = self.position
+        x_1, y_1 = self.position
 
         if self.facing == "N":
-            x = self.position[0]
             y = ceil( self.position[1] + self.speed )
-            x_1 = self.position[0]
             y_1 = self.position[1]+self.speed
-            rotation_allowed = ceil( self.position[1] + 2*self.speed ) > \
-                            ceil( self.position[1] + self.speed )
-            allowed_facings = { "N": None,
-                                "S": None,
-                                "SW": "W",
-                                "SE": "E"
-                                }
+            rotation_allowed = ceil( y_1 + self.speed ) > ceil(y_1)
         if self.facing == "S":
-            x = self.position[0]
             y = floor( self.position[1] - self.speed )
-            x_1 = self.position[0]
             y_1 = self.position[1]-self.speed
-            rotation_allowed = floor( self.position[1] - 2*self.speed ) < \
-                            floor( self.position[1] - self.speed )
-            allowed_facings = { "N": None,
-                                "S": None,
-                                "NW": "W",
-                                "NE": "E"
-                                }
+            rotation_allowed = ceil( y_1 - self.speed ) < ceil(y_1)
         if self.facing == "E":
             x = ceil( self.position[0] + self.speed )
-            y = self.position[1]
             x_1 = self.position[0]+self.speed
-            y_1 = self.position[1]
-            rotation_allowed = ceil( self.position[0] + 2*self.speed ) > \
-                            ceil( self.position[0] + self.speed )
-            allowed_facings = { "E": None,
-                                "W": None,
-                                "NW": "N",
-                                "SW": "S"
-                                }
+            rotation_allowed = ceil( x_1 + self.speed ) > ceil(x_1)
         if self.facing == "W":
             x = floor( self.position[0] - self.speed )
-            y = self.position[1]
             x_1 = self.position[0]-self.speed
-            y_1 = self.position[1]
-            rotation_allowed = floor( self.position[0] - 2*self.speed ) < \
-                            floor( self.position[0] - self.speed )
-            allowed_facings = { "E": None,
-                                "W": None,
-                                "NE": "N",
-                                "SE": "S"
-                                }
+            rotation_allowed = ceil( x_1 - self.speed ) < ceil(x_1)
 
         constr = map[ str(x) + "," + str(y) ][1]
 
@@ -86,8 +56,8 @@ class Cart:
         constr_facing = constr.get_facing()
         if self.rotating and rotation_allowed:
             self.facing = self.rotating
-            self.position[0] = x
-            self.position[1] = y
+            self.position[0] = round(x_1)
+            self.position[1] = round(y_1)
             self.rotating = False
             return
         neg_facing = negative_list[self.facing]
@@ -97,13 +67,6 @@ class Cart:
             rotation_dict = constr.get_rotate_to()
             if neg_facing in list(rotation_dict):
                 self.rotating = rotation_dict[ neg_facing ]
-                '''
-        if constr and constr_facing in list(allowed_facings):
-            self.position[0] = x_1
-            self.position[1] = y_1
-            if len(constr_facing) == 2:
-                self.rotating = allowed_facings[ constr_facing ]
-                '''
 
 
 class Train:

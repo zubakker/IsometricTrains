@@ -1,79 +1,11 @@
 {
     "rail types": {
-	"default_up_rail_N":
-	    {
-		"come_from": ["S", "N"],
-		"rotate_to": { },
-		"texture_scale": [1,2],
-		"displacement": [1,-1]
-	    },
-	"default_up_rail_S":
-	    {
-		"come_from": ["S", "N"],
-		"rotate_to": { },
-		"texture_scale": [1,1],
-		"displacement": [0.5,-0.5]
-	    },
-	"default_up_rail_W":
-	    {
-		"come_from": ["E", "W"],
-		"rotate_to": { },
-		"texture_scale": [1,1],
-		"displacement": [0.5,-0.5]
-	    },
-	"default_up_rail_E":
-	    {
-		"come_from": ["E", "W"],
-		"rotate_to": { },
-		"texture_scale": [1,2],
-		"displacement": [1,-1]
-	    },
-	"default_junction_rail_NES": 
-	    {
-		"come_from": ["N", "E", "S"],
-		"rotate_to": { "E": "N" },
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
-	"default_junction_rail_NESW":
-	    {
-		"come_from": ["N", "E", "S", "W"],
-		"rotate_to": {},
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
-	"default_one_way_rail_N":
-	    {
-		"come_from": ["S"],
-		"rotate_to": {},
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
-	"default_one_way_rail_E":
-	    {
-		"come_from": ["W"],
-		"rotate_to": {},
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
-	"default_one_way_rail_S":
-	    {
-		"come_from": ["N"],
-		"rotate_to": {},
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
-	"default_one_way_rail_W":
-	    {
-		"come_from": ["E"],
-		"rotate_to": {},
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
 	"default_rail_E":
 	    {
 		"come_from": ["E", "W"],
 		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
@@ -84,6 +16,8 @@
 				"E": "N",
 				"N": "E"
 		},
+		"ramp_up": {},
+		"ramp_down": {},
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
@@ -91,6 +25,8 @@
 	    {
 		"come_from": ["N", "S"],
 		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
@@ -101,6 +37,8 @@
 				"W": "N",
 				"N": "W"
 		},
+		"ramp_up": {},
+		"ramp_down": {},
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
@@ -111,6 +49,8 @@
 				"E": "S",
 				"S": "E"
 		},
+		"ramp_up": {},
+		"ramp_down": {},
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
@@ -121,6 +61,98 @@
 				"W": "S",
 				"S": "W"
 		},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
+	"default_junction_rail_NES": 
+	    {
+		"come_from": ["N", "E", "S"],
+		"rotate_to": { "E": "N" },
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
+	"default_junction_rail_NESW":
+	    {
+		"come_from": ["N", "E", "S", "W"],
+		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
+	"default_up_rail_N":
+	    {
+		"come_from": ["S", "N"],
+		"rotate_to": { },
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,2],
+		"displacement": [1,-1]
+	    },
+	"default_up_rail_S":
+	    {
+		"come_from": ["S", "N"],
+		"rotate_to": { },
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0.5,-0.5]
+	    },
+	"default_up_rail_W":
+	    {
+		"come_from": ["E", "W"],
+		"rotate_to": { },
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0.5,-0.5]
+	    },
+	"default_up_rail_E":
+	    {
+		"come_from": ["E", "W"],
+		"rotate_to": { },
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,2],
+		"displacement": [1,-1]
+	    },
+	"default_one_way_rail_N":
+	    {
+		"come_from": ["S"],
+		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
+	"default_one_way_rail_E":
+	    {
+		"come_from": ["W"],
+		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
+	"default_one_way_rail_S":
+	    {
+		"come_from": ["N"],
+		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
+	"default_one_way_rail_W":
+	    {
+		"come_from": ["E"],
+		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    }

@@ -23,7 +23,6 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                     pos = cam.get_tile( mouse_pos )
                     if selected_constr:
                         const = Rail( selected_constr, facing, c_pack )
-                        print(pos)
                         map.set_construction( pos, const )
                         cam.render_bg( map )
                     else:
