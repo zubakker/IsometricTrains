@@ -10,17 +10,22 @@ class Cart:
     speed: float
     facing: str # N, E, W, S, NE, ...
     inventory: list[ Item ]
-    def __init__( self, name, facing, position ):
+    def __init__( self, name, facing, position, height ):
         self.name = name
         self.facing = facing
         self.position = position
+        self.height = height 
         self.speed = 0.03 # TEMP
         self.rotating = False
+        self.ramping_up = False
+        self.ramping_down = False
 
     def get_name_facing( self ):
         return self.name + "_" + self.facing
     def get_pos( self ):
         return self.position
+    def get_height( self ):
+        return self.height
 
     def update( self, map ): 
         negative_list = {
@@ -49,24 +54,49 @@ class Cart:
             x_1 = self.position[0]-self.speed
             rotation_allowed = ceil( x_1 - self.speed ) < ceil(x_1)
 
+        if self.ramping_up in ["N","S"]:
+            self.height += self.speed
+        if self.ramping_up in ["W","E"]:
+            self.height += self.speed
+        if self.ramping_down in ["N","S"]:
+            self.height -= self.speed
+        if self.ramping_down in ["W","E"]:
+            self.height -= self.speed
+
+
         constr = map[ str(x) + "," + str(y) ][1]
 
         if not constr:
+            # either goes off the rail or stops completely
+            # TEMP does nothing
             return 
-        constr_facing = constr.get_facing()
         if self.rotating and rotation_allowed:
             self.facing = self.rotating
             self.position[0] = round(x_1)
             self.position[1] = round(y_1)
             self.rotating = False
             return
+        if (self.ramping_up or self.ramping_down) and rotation_allowed:
+            self.position[0] = round(x_1)
+            self.position[1] = round(y_1)
+            self.height = round(self.height)
+            self.ramping_up = False
+            self.ramping_down = False
+            return
         neg_facing = negative_list[self.facing]
 
         if neg_facing in constr.get_come_from():
             self.position = [x_1, y_1]
             rotation_dict = constr.get_rotate_to()
+            ramp_up_dict = constr.get_ramp_up()
+            ramp_down_dict = constr.get_ramp_down()
             if neg_facing in list(rotation_dict):
                 self.rotating = rotation_dict[ neg_facing ]
+            if neg_facing in list(ramp_up_dict):
+                self.ramping_up = ramp_up_dict[ neg_facing ]
+            if neg_facing in list(ramp_down_dict):
+                self.ramping_down = ramp_down_dict[ neg_facing ]
+
 
 
 class Train:

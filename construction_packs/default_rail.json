@@ -66,14 +66,23 @@
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
-	"default_junction_rail_NES": 
+	"default_up_rail_W":
 	    {
-		"come_from": ["N", "E", "S"],
-		"rotate_to": { "E": "N" },
-		"ramp_up": {},
-		"ramp_down": {},
+		"come_from": ["E", "W"],
+		"rotate_to": {},
+		"ramp_up": {"E": "W"},
+		"ramp_down": {"W": "E"},
+		"texture_scale": [1,2],
+		"displacement": [1,-1]
+	    },
+	"default_up_rail_E":
+	    {
+		"come_from": ["E", "W"],
+		"rotate_to": {},
+		"ramp_up": {"W": "E"},
+		"ramp_down": {"E": "W"},
 		"texture_scale": [1,1],
-		"displacement": [0,0]
+		"displacement": [0.5,-0.5]
 	    },
 	"default_junction_rail_NESW":
 	    {
@@ -87,38 +96,29 @@
 	"default_up_rail_N":
 	    {
 		"come_from": ["S", "N"],
-		"rotate_to": { },
-		"ramp_up": {},
-		"ramp_down": {},
+		"rotate_to": {},
+		"ramp_up": {"S": "N"},
+		"ramp_down": {"N": "S"},
 		"texture_scale": [1,2],
 		"displacement": [1,-1]
 	    },
 	"default_up_rail_S":
 	    {
 		"come_from": ["S", "N"],
-		"rotate_to": { },
-		"ramp_up": {},
-		"ramp_down": {},
+		"rotate_to": {},
+		"ramp_up": {"N": "S"},
+		"ramp_down": {"S": "N"},
 		"texture_scale": [1,1],
 		"displacement": [0.5,-0.5]
 	    },
-	"default_up_rail_W":
+	"default_junction_rail_NES": 
 	    {
-		"come_from": ["E", "W"],
-		"rotate_to": { },
+		"come_from": ["N", "E", "S"],
+		"rotate_to": { "E": "N" },
 		"ramp_up": {},
 		"ramp_down": {},
 		"texture_scale": [1,1],
-		"displacement": [0.5,-0.5]
-	    },
-	"default_up_rail_E":
-	    {
-		"come_from": ["E", "W"],
-		"rotate_to": { },
-		"ramp_up": {},
-		"ramp_down": {},
-		"texture_scale": [1,2],
-		"displacement": [1,-1]
+		"displacement": [0,0]
 	    },
 	"default_one_way_rail_N":
 	    {

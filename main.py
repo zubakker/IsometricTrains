@@ -20,7 +20,7 @@ cam = Camera( [0, 0], 1, screen, map )
 # TEMP
 # tile = Tile( "default_bright_tile", 1 )
 # map.set_tile( "1,1", tile )
-cart = Cart( "default_cart", "N", [0, 0] )
+cart = Cart( "default_cart", "N", [0, 0], 0 )
 trains_list = list()
 trains_list.append(cart)
 # 

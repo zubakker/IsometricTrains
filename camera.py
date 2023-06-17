@@ -77,20 +77,16 @@ class Camera:
             x -= 1
             y += 1
             tile = map[ str(int(x))+","+str(int(y)) ][0]
-            k = x + tile.get_height()
-            f = y - tile.get_height()
+            k = x - cart.get_height() # + tile.get_height()
+            f = y + cart.get_height() # - tile.get_height()
             # converting isometric coords into coords on screen
             position = [ k - self.position[0]*2 + f - 1,
                          f - self.position[1] + k/2 -3*f/2 - 0.5 ]
 
-            # position = [ x - self.position[0]*2, y - self.position[1]*2 ]
-            # position[1] += tile.get_height()*2
             cart_img = self.texture_pack[ cart.get_name_facing() ] 
             size_x = self.default_tile_size[0] * self.zoom
             size_y = self.default_tile_size[1] * self.zoom*2
             cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
-            # pos_x = (position[0]/2 + y/2 -0.5) * self.default_tile_size[0] * self.zoom
-            # pos_y = (position[1] + x/2 -3*y/2 -0.5) * self.default_tile_size[1] * self.zoom
             pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
             pos_y = position[1] * self.default_tile_size[1] * self.zoom
             self.screen.blit( cart_img_scaled, 
@@ -177,6 +173,11 @@ class Camera:
         ty = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
         tx += (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]
         ty -= (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]
+        x = round(tx)
+        y = round(ty)
+            
+        # TODO return different coords if a tall tile in front of camera blocks theese coords
+
 
         return str(round(tx)) + "," + str(round(ty))
 

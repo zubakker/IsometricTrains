@@ -30,6 +30,8 @@ class Rail(Construction):
         super().__init__( name, facing )
         self.come_from = c_pack["rail types"][ name ]["come_from"]
         self.rotate_to = c_pack["rail types"][ name ]["rotate_to"]
+        self.ramp_up = c_pack["rail types"][ name ]["ramp_up"]
+        self.ramp_down = c_pack["rail types"][ name ]["ramp_down"]
         self.texture_scale = c_pack["rail types"][ name ]["texture_scale"]
         self.displacement = c_pack["rail types"][ name ]["displacement"]
 
@@ -40,6 +42,10 @@ class Rail(Construction):
         return self.come_from
     def get_rotate_to( self ):
         return self.rotate_to
+    def get_ramp_up( self ):
+        return self.ramp_up
+    def get_ramp_down( self ):
+        return self.ramp_down
     def get_texture_scale( self ):
         return self.texture_scale
     def get_displacement( self ):
