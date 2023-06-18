@@ -21,6 +21,10 @@ class Cart:
         self.ramping_down = False
 
     def get_name_facing( self ):
+        if self.ramping_up:
+            return self.name + "_up_" + self.facing
+        if self.ramping_down:
+            return self.name + "_down_" + self.facing
         return self.name + "_" + self.facing
     def get_pos( self ):
         return self.position
