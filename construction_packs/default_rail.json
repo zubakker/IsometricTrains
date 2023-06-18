@@ -9,6 +9,15 @@
 		"texture_scale": [1,1],
 		"displacement": [0,0]
 	    },
+	"default_rail_N":
+	    {
+		"come_from": ["N", "S"],
+		"rotate_to": {},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": [1,1],
+		"displacement": [0,0]
+	    },
 	"default_rail_NE":
 	    {
 		"come_from": ["N", "E"],
@@ -16,15 +25,6 @@
 				"E": "N",
 				"N": "E"
 		},
-		"ramp_up": {},
-		"ramp_down": {},
-		"texture_scale": [1,1],
-		"displacement": [0,0]
-	    },
-	"default_rail_N":
-	    {
-		"come_from": ["N", "S"],
-		"rotate_to": {},
 		"ramp_up": {},
 		"ramp_down": {},
 		"texture_scale": [1,1],

@@ -68,7 +68,7 @@ class Cart:
             self.height -= self.speed
 
 
-        constr = map[ str(x) + "," + str(y) ][1]
+        tile, constr = map[ str(x) + "," + str(y) ]
 
         if not constr:
             # either goes off the rail or stops completely
@@ -87,7 +87,22 @@ class Cart:
             self.ramping_up = False
             self.ramping_down = False
             return
+        
         neg_facing = negative_list[self.facing]
+        if abs(tile.get_height() - self.height) > 1:
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            return
+        if tile.get_height() == self.height - 1 and \
+                neg_facing not in list(constr.get_ramp_down()):
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            return
+        if tile.get_height() == self.height + 1 and \
+                neg_facing not in list(constr.get_ramp_up()):
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            return
 
         if neg_facing in constr.get_come_from():
             self.position = [x_1, y_1]
