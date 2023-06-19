@@ -11,8 +11,8 @@ from constants import SCREEN_SIZE
 def main_loop( cam, map, screen, trains_list, c_pack ):
     selected_tile = "default_bright_tile" 
     selected_constr = 0
-    facing_list = [ "N", "E", "NE", "NW", "SE", "SW" ]
-    facing = None 
+    facing_list = "NESW"
+    facing = 0
 
     while True:
         keys = pygame.key.get_pressed()
@@ -23,7 +23,8 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                     mouse_pos = pygame.mouse.get_pos()
                     pos = cam.get_tile( mouse_pos, map )
                     if selected_constr:
-                        const = Rail( rail_types[selected_constr-1], facing, c_pack )
+                        const = Rail( rail_types[selected_constr-1], 
+                                    facing_list[facing], c_pack )
                         map.set_construction( pos, const )
                         cam.render_bg( map )
                     else:
@@ -53,7 +54,6 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                 for i in range(len(rail_types)):
                     if event.key == (pygame.K_1 + i):
                         selected_constr = i+1
-                        facing = None 
 
                 
                 if event.key == pygame.K_0:
@@ -65,6 +65,9 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                     cam.move_vert( -1, map )
                 if event.key == pygame.K_k:
                     cam.move_vert( +1, map )
+                if event.key == pygame.K_r:
+                    facing = (facing+1)%4
+
                     ...
         if keys[ pygame.K_LEFT ] and keys[ pygame.K_LSHIFT ]:
             cam.move( [-0.1, 0] )
@@ -89,18 +92,19 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
 
         screen.fill( (0, 0, 0) )
         cam.render( map, trains_list )
-        render_buttons( cam, screen, selected_constr, c_pack )
+        render_buttons( cam, screen, selected_constr, c_pack, facing )
         pygame.display.update()
         time.sleep( 0.01 )
 
-def render_buttons( cam, screen, selected_constr, c_pack ):
+def render_buttons( cam, screen, selected_constr, c_pack, facing ):
+    facing_list = "NESW"
     dx, dy = cam.get_default_size()
     dx *= 0.6
     dy *= 0.6
     j = 0
     rail_types = list(c_pack["rail types"])
     for rail_type in rail_types:
-        texture = cam.get_texture( rail_type )
+        texture = cam.get_texture( rail_type + "_" + facing_list[facing] )
         if rail_types[selected_constr - 1] == rail_type:
             texture_scaled = pygame.transform.scale( texture, (dx*1.3, dy*1.3) )
             screen.blit( texture_scaled, ((dx+5)*j, SCREEN_SIZE[1]-dy*1.3) )

@@ -50,7 +50,7 @@ class Camera:
         ...
     def get_texture( self, name ):
         if name not in list(self.texture_pack):
-            return 0
+            return None 
         return self.texture_pack[name]
     def get_default_size(self):
         return self.default_tile_size
@@ -150,14 +150,24 @@ class Camera:
                 const = map[ str(j)+","+str(i) ][1]
                 if not const:
                     continue
-                displacement = const.get_displacement()
+                displacement_dict = const.get_displacement()
+                if "NESW" in displacement_dict:
+                    displacement = displacement_dict["NESW"]
+                else:
+                    displacement = displacement_dict[ const.get_facing() ]
+                if tile.get_height() > self.cam_height:
+                    continue
                 f = i + tile.get_height() + displacement[0]
                 k = j - tile.get_height() + displacement[1]
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]
                 const_img = self.texture_pack[ const.get_name_facing() ] 
-                scale = const.get_texture_scale()
+                scale_dict = const.get_texture_scale()
+                if "NESW" in scale_dict.keys():
+                    scale = scale_dict["NESW"]
+                else:
+                    scale = scale_dict[ const.get_facing() ]
                 size_x = self.default_tile_size[0] * self.zoom * scale[0]
                 size_y = self.default_tile_size[1] * self.zoom * scale[1]
                 const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )

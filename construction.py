@@ -27,6 +27,19 @@ class Rail(Construction):
     displacement: [float, float]
 
     def __init__( self, name, facing, c_pack ):
+        self.directions = "NESW"
+        self.directions_rev = {
+                "N": 0,
+                "E": 1,
+                "S": 2,
+                "W": 3
+                }
+        self.rel_directions_rev = {
+                "Front": 0,
+                "Right": 1,
+                "Back": 2,
+                "Left": 3
+                }
         super().__init__( name, facing )
         self.come_from = c_pack["rail types"][ name ]["come_from"]
         self.rotate_to = c_pack["rail types"][ name ]["rotate_to"]
@@ -35,17 +48,33 @@ class Rail(Construction):
         self.texture_scale = c_pack["rail types"][ name ]["texture_scale"]
         self.displacement = c_pack["rail types"][ name ]["displacement"]
 
-    def get_name_facing( self):
-        return self.name
-
     def get_come_from( self ):
-        return self.come_from
+        come_fr = list()
+        for dir in self.come_from:
+            key = (self.directions_rev[self.facing] + self.rel_directions_rev[dir])%4
+            come_fr.append(self.directions[key])
+        return come_fr
     def get_rotate_to( self ):
-        return self.rotate_to
+        rotate_t = dict()
+        for dir_from, dir_to in self.rotate_to.items():
+            key_from = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_from])%4
+            key_to = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_to])%4
+            rotate_t[self.directions[key_from]] = self.directions[key_to]
+        return rotate_t
     def get_ramp_up( self ):
-        return self.ramp_up
+        ramp_u = dict()
+        for dir_from, dir_to in self.ramp_up.items():
+            key_from = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_from])%4
+            key_to = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_to])%4
+            ramp_u[self.directions[key_from]] = self.directions[key_to]
+        return ramp_u
     def get_ramp_down( self ):
-        return self.ramp_down
+        ramp_d = dict()
+        for dir_from, dir_to in self.ramp_down.items():
+            key_from = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_from])%4
+            key_to = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_to])%4
+            ramp_d[self.directions[key_from]] = self.directions[key_to]
+        return ramp_d
     def get_texture_scale( self ):
         return self.texture_scale
     def get_displacement( self ):

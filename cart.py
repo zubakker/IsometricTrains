@@ -112,8 +112,10 @@ class Cart:
             if neg_facing in list(rotation_dict):
                 self.rotating = rotation_dict[ neg_facing ]
             if neg_facing in list(ramp_up_dict):
+                print('ramping_up', ramp_up_dict, constr.get_name_facing())
                 self.ramping_up = ramp_up_dict[ neg_facing ]
             if neg_facing in list(ramp_down_dict):
+                print('ramping_down', ramp_down_dict)
                 self.ramping_down = ramp_down_dict[ neg_facing ]
 
 
