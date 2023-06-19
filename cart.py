@@ -19,6 +19,7 @@ class Cart:
         self.rotating = False
         self.ramping_up = False
         self.ramping_down = False
+        self.stopped = False
 
     def get_name_facing( self ):
         if self.ramping_up:
@@ -30,6 +31,14 @@ class Cart:
         return self.position
     def get_height( self ):
         return self.height
+    def get_speed( self ):
+        return self.speed
+    def set_speed( self, value ):
+        self.speed = value
+    def get_stopped( self ):
+        return self.stopped
+    def set_stopped( self, value ):
+        self.stopped = value
 
     def update( self, map ): 
         negative_list = {
@@ -69,40 +78,47 @@ class Cart:
 
 
         tile, constr = map[ str(x) + "," + str(y) ]
-
+        neg_facing = negative_list[self.facing]
         if not constr:
             # either goes off the rail or stops completely
             # TEMP does nothing
+            self.stopped = True
+            return True
+        if abs(tile.get_height() - self.height) > 1:
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            self.stopped = True
+            return True
+        if tile.get_height() == self.height - 1 and \
+                neg_facing not in list(constr.get_ramp_down()):
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            self.stopped = True
+            return True
+        if tile.get_height() == self.height + 1 and \
+                neg_facing not in list(constr.get_ramp_up()):
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            self.stopped = True
+            return True
+
+        if self.stopped:
+            self.stopped = False
             return 
         if self.rotating and rotation_allowed:
             self.facing = self.rotating
             self.position[0] = round(x_1)
             self.position[1] = round(y_1)
             self.rotating = False
-            return
+            return False
         if (self.ramping_up or self.ramping_down) and rotation_allowed:
             self.position[0] = round(x_1)
             self.position[1] = round(y_1)
             self.height = round(self.height)
             self.ramping_up = False
             self.ramping_down = False
-            return
+            return False
         
-        neg_facing = negative_list[self.facing]
-        if abs(tile.get_height() - self.height) > 1:
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            return
-        if tile.get_height() == self.height - 1 and \
-                neg_facing not in list(constr.get_ramp_down()):
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            return
-        if tile.get_height() == self.height + 1 and \
-                neg_facing not in list(constr.get_ramp_up()):
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            return
 
         if neg_facing in constr.get_come_from():
             self.position = [x_1, y_1]
@@ -112,14 +128,47 @@ class Cart:
             if neg_facing in list(rotation_dict):
                 self.rotating = rotation_dict[ neg_facing ]
             if neg_facing in list(ramp_up_dict):
-                print('ramping_up', ramp_up_dict, constr.get_name_facing())
                 self.ramping_up = ramp_up_dict[ neg_facing ]
             if neg_facing in list(ramp_down_dict):
-                print('ramping_down', ramp_down_dict)
                 self.ramping_down = ramp_down_dict[ neg_facing ]
+        self.stopped = False
 
 
 
-class Train:
+class Train(Cart):
     carts: list[ Cart ]
-    ...
+    def __init__( self, speed, carts_list ):
+        self.speed = speed
+        self.stopped = False
+        self.carts = carts_list
+
+    def get_carts( self ):
+        return self.carts
+
+    def update(self, map):
+        self.stopped = False
+        speeds = 0
+        
+        for cart in self.carts:
+            speeds += cart.get_speed()
+        aver_speed = speeds / len(self.carts)
+        self.speed = aver_speed
+
+        for cart in self.carts:
+            cart.set_speed(aver_speed)
+            if self.stopped:
+                cart.set_stopped( True )
+            if cart.update(map):
+                self.stopped = True
+        if self.stopped:
+            for cart in self.carts:
+                cart.set_stopped( True )
+
+
+
+
+
+
+
+
+

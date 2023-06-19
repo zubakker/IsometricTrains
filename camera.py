@@ -73,27 +73,28 @@ class Camera:
                 (-SCREEN_SIZE[0] - self.default_tile_size[0]*dx*self.zoom,
                  -SCREEN_SIZE[1] - self.default_tile_size[1]*dy*self.zoom) )
         # -- Rendering trains -- 
-        for cart in trains_list:
-            x, y = cart.get_pos()
-            x -= 1
-            y += 1
-            tile = map[ str(int(x))+","+str(int(y)) ][0]
-            k = x - cart.get_height() # + tile.get_height()
-            f = y + cart.get_height() # - tile.get_height()
-            # converting isometric coords into coords on screen
-            position = [ k - self.position[0]*2 + f - 1,
-                         f - self.position[1] + k/2 -3*f/2 - 0.5 ]
+        for train in trains_list:
+            for cart in train.get_carts():
+                x, y = cart.get_pos()
+                x -= 1
+                y += 1
+                tile = map[ str(int(x))+","+str(int(y)) ][0]
+                k = x - cart.get_height() # + tile.get_height()
+                f = y + cart.get_height() # - tile.get_height()
+                # converting isometric coords into coords on screen
+                position = [ k - self.position[0]*2 + f - 1,
+                             f - self.position[1] + k/2 -3*f/2 - 0.5 ]
 
-            cart_img = self.texture_pack[ cart.get_name_facing() ] 
-            size_x = self.default_tile_size[0] * self.zoom
-            size_y = self.default_tile_size[1] * self.zoom*2
-            cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
-            pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
-            pos_y = position[1] * self.default_tile_size[1] * self.zoom
-            self.screen.blit( cart_img_scaled, 
-                                (pos_x + SCREEN_SIZE[0]/2,
-                                 pos_y + SCREEN_SIZE[1]/2)
-                            )
+                cart_img = self.texture_pack[ cart.get_name_facing() ] 
+                size_x = self.default_tile_size[0] * self.zoom
+                size_y = self.default_tile_size[1] * self.zoom*2
+                cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
+                pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
+                pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                self.screen.blit( cart_img_scaled, 
+                                    (pos_x + SCREEN_SIZE[0]/2,
+                                     pos_y + SCREEN_SIZE[1]/2)
+                                )
 
         ...
     
