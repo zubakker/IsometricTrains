@@ -9,7 +9,7 @@ from constants import SCREEN_SIZE
 
 
 def main_loop( cam, map, screen, trains_list, c_pack ):
-    selected_tile = "default_bright_tile" 
+    selected_tile = "default_basic_tile" 
     selected_constr = 0
     facing_list = "NESW"
     facing = 0
@@ -33,7 +33,7 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                         cam.render_bg( map )
                 if event.button == 3: # right
                     mouse_pos = pygame.mouse.get_pos()
-                    pos = cam.get_tile( mouse_pos )
+                    pos = cam.get_tile( mouse_pos, map )
                     map[ pos ][0].change_height(-1)
                     map[ pos ][0].change_name( selected_tile )
                     cam.render_bg( map )
@@ -60,7 +60,9 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                     selected_tile = "default_bright_tile" 
                     selected_constr = None
                 if event.key == pygame.K_w:
+                    a = time.time()
                     cam.render_bg( map )
+                    print(time.time() -a)
                 if event.key == pygame.K_j:
                     cam.move_vert( -1, map )
                 if event.key == pygame.K_k:
@@ -91,6 +93,7 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
             train.update( map )
 
         screen.fill( (0, 0, 0) )
+        a = time.time()
         cam.render( map, trains_list )
         render_buttons( cam, screen, selected_constr, c_pack, facing )
         pygame.display.update()

@@ -1,5 +1,7 @@
-import os
+import os 
 import pygame
+
+from math import floor
 
 
 from tile import Tile, Map
@@ -24,7 +26,7 @@ class Camera:
         self.load_texture_pack( "default" )
 
         self.bg_updated = False
-        self.background = pygame.Surface( (SCREEN_SIZE[0]*3, SCREEN_SIZE[1]*3) )
+        self.background = pygame.Surface( (3*SCREEN_SIZE[0], 3*SCREEN_SIZE[1]) )
         self.bg_position = [0, 0]
         self.cam_height = False 
 
@@ -69,16 +71,15 @@ class Camera:
             self.render_bg( map )
         if posx + SCREEN_SIZE[0]*2 < 0 or posy + SCREEN_SIZE[1]*2 < 0:
             self.render_bg( map )
-        self.screen.blit( self.background,
-                (-SCREEN_SIZE[0] - self.default_tile_size[0]*dx*self.zoom,
-                 -SCREEN_SIZE[1] - self.default_tile_size[1]*dy*self.zoom) )
+        self.screen.blit( self.background, (posx, posy) )
+
         # -- Rendering trains -- 
         for train in trains_list:
+            rendering_list = list()
             for cart in train.get_carts():
                 x, y = cart.get_pos()
                 x -= 1
                 y += 1
-                tile = map[ str(int(x))+","+str(int(y)) ][0]
                 k = x - cart.get_height() # + tile.get_height()
                 f = y + cart.get_height() # - tile.get_height()
                 # converting isometric coords into coords on screen
@@ -91,15 +92,142 @@ class Camera:
                 cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
                 pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
                 pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                rendering_list.append([pos_x, pos_y, cart_img_scaled, cart.get_pos()])
+            for cart_props in sorted(rendering_list, key=lambda x: x[1]):
+                pos_x, pos_y, cart_img_scaled, pos = cart_props
                 self.screen.blit( cart_img_scaled, 
-                                    (pos_x + SCREEN_SIZE[0]/2,
-                                     pos_y + SCREEN_SIZE[1]/2)
-                                )
+                                        (pos_x + SCREEN_SIZE[0]/2,
+                                         pos_y + SCREEN_SIZE[1]/2)
+                                    )
+            for cart_props in sorted(rendering_list, key=lambda x: x[1]):
+                pos_x, pos_y, cart_img_scaled, pos = cart_props
+                x, y = pos
+                if map[ str(x+1) +","+ str(y) ][0].get_height() > 0:
+                    self.render_tile(map, (x+1, y))
+                if map[ str(x) +","+ str(y-1) ][0].get_height() > 0:
+                    self.render_tile(map, (x, y-1))
+                for i in range(1, map.get_chunck_size()):
+                    if map[ str(x+i) +","+ str(y-i) ][0].get_height() >= i:
+                        self.render_tile(map, (x+i, y-i))
+                    if map[ str(x+i+1) +","+ str(y-i) ][0].get_height() >= i:
+                        self.render_tile(map, (x+i+1, y-i))
+                    if map[ str(x+i) +","+ str(y-i-1) ][0].get_height() >= i:
+                        self.render_tile(map, (x+i, y-i-1))
+
 
         ...
+    def render_tile(self, map, position):
+        j, i = position
+        tile = map[ str(j)+","+str(i) ][0]
+        tile_e = map[ str(j+1)+","+str(i) ][0]
+        tile_s = map[ str(j)+","+str(i-1) ][0]
+
+        height = tile.get_height()
+        height_e = tile_e.get_height()
+        height_s = tile_s.get_height()
+        tile_img = self.texture_pack[ tile.get_name() + str(height%5) ] 
+        if height > self.cam_height:
+            height = self.cam_height
+            tile_img = self.texture_pack[ tile.get_name() + "_black" ] 
+        if height_e > self.cam_height:
+            height_e = self.cam_height
+        if height_s > self.cam_height:
+            height_s = self.cam_height
+        f = i + height
+        k = j - height
+        # converting isometric coords into coords on screen
+        position = [ k - self.position[0]*2 + f - 1,
+                     f - self.position[1] + k/2 -3*f/2 - 0.5 ]
+        size_x = self.default_tile_size[0] * self.zoom
+        size_y = self.default_tile_size[1] * self.zoom
+        tile_img_scaled = pygame.transform.scale( tile_img, (size_x, size_y) )
+        pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
+        pos_y = position[1] * self.default_tile_size[1] * self.zoom
+
+        if height_s < height and height_e < height:
+            # render tile and walls 
+            wall_height = height - max(height_e, height_s)
+            bg_height = self.texture_pack[ "default_bg_height" ]
+            bg_wall = self.texture_pack[ "default_bg_wall" ]
+            bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
+            bg_height_scaled = pygame.transform.scale( bg_height, 
+                    (size_x, size_y*(wall_height-0.5)))
+            dy = self.default_tile_size[1] * self.zoom / 2
+
+            self.screen.blit( bg_wall_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 +size_y*(wall_height-1))
+                            )
+            self.screen.blit( bg_height_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
+                            )
+            height -= wall_height
+        if height_e < height:
+            # render tile and right wall
+            bg_height = self.texture_pack[ "default_bg_height_right" ]
+            bg_wall = self.texture_pack[ "default_bg_wall_right" ]
+            bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
+            bg_height_scaled = pygame.transform.scale( bg_height, 
+                    (size_x, size_y*(height-0.5)))
+            dy = self.default_tile_size[1] * self.zoom / 2
+
+            self.screen.blit( bg_wall_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 +size_y*(height-1))
+                            )
+            self.screen.blit( bg_height_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
+                            )
+            ...
+        elif height_s < height:
+            # render tile and left wall
+            bg_height = self.texture_pack[ "default_bg_height_left" ]
+            bg_wall = self.texture_pack[ "default_bg_wall_left" ]
+            bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
+            bg_height_scaled = pygame.transform.scale( bg_height, 
+                    (size_x, size_y*(height-0.5)))
+            dy = self.default_tile_size[1] * self.zoom / 2
+
+            self.screen.blit( bg_wall_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 +size_y*(height-1))
+                            )
+            self.screen.blit( bg_height_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
+                            )
+            ...
+
+        '''
+        if height:
+            bg_height = self.texture_pack[ "default_bg_height" ]
+            bg_wall = self.texture_pack[ "default_bg_wall" ]
+            bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
+            bg_height_scaled = pygame.transform.scale( bg_height, 
+                    (size_x, size_y*(height-1)*1.5))
+            dy = self.default_tile_size[1] * self.zoom / 2
+
+            self.screen.blit( bg_wall_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 +size_y*(height-1))
+                            )
+            self.screen.blit( bg_height_scaled, 
+                                (pos_x + SCREEN_SIZE[0]/2,
+                                 pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
+                            )
+            '''
+        self.screen.blit( tile_img_scaled, 
+                            (pos_x + SCREEN_SIZE[0]/2,
+                             pos_y + SCREEN_SIZE[1]/2)
+                        )
+        # === rendering constructions ===
+        # TODO
+ 
     
     def render_bg( self, map: Map ):
-        self.background.fill((0, 0, 0))
+        self.background.fill((0,0,0))
         # -- Define which coords are on screen --
         screen_w_tiles = SCREEN_SIZE[0] / (self.default_tile_size[0] * self.zoom)
         screen_h_tiles = SCREEN_SIZE[1] / (self.default_tile_size[1] * self.zoom)
@@ -133,15 +261,21 @@ class Camera:
                 pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
                 pos_y = position[1] * self.default_tile_size[1] * self.zoom
 
-
                 if height:
-                    bg_tile = self.texture_pack[ "default_bg_height" ] # TEMP
-                    height = height + 1
-                    bg_tile_scaled = pygame.transform.scale( bg_tile, (size_x, height*size_y))
+                    bg_height = self.texture_pack[ "default_bg_height" ]
+                    bg_wall = self.texture_pack[ "default_bg_wall" ]
+                    bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
+                    bg_height_scaled = pygame.transform.scale( bg_height, 
+                            (size_x, size_y*(height-1)*1.5))
                     dy = self.default_tile_size[1] * self.zoom / 2
-                    self.background.blit( bg_tile_scaled, 
+
+                    self.background.blit( bg_wall_scaled, 
                                         (pos_x + 3*SCREEN_SIZE[0]/2,
-                                         pos_y + dy + 3*SCREEN_SIZE[1]/2)
+                                         pos_y + 3*SCREEN_SIZE[1]/2 +size_y*(height-1))
+                                    )
+                    self.background.blit( bg_height_scaled, 
+                                        (pos_x + 3*SCREEN_SIZE[0]/2,
+                                         pos_y + 3*SCREEN_SIZE[1]/2 + size_y*0.5)
                                     )
                 self.background.blit( tile_img_scaled, 
                                     (pos_x + 3*SCREEN_SIZE[0]/2,
