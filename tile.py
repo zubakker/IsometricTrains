@@ -57,6 +57,7 @@ class Map:
             for j in range(-cs//2, cs//2 + 1):
                 # generating noise-based chunck
                 height = abs(noise[i, j]*5)
+                # height = 0 # TEMP
                 tile = Tile( "default_basic_tile", int(height) )
                 self.map[ str(chunck_center[0]*cs + i) + "," 
                         + str(chunck_center[1]*cs + j) ] = [tile , None]

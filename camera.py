@@ -80,31 +80,44 @@ class Camera:
                 x, y = cart.get_pos()
                 x -= 1
                 y += 1
-                k = x - cart.get_height() # + tile.get_height()
-                f = y + cart.get_height() # - tile.get_height()
+                texture_displacement_dict = cart.get_texture_displacement()
+                status_direction = cart.get_status() + "NESW"
+                if status_direction in texture_displacement_dict:
+                    texture_displacement = texture_displacement_dict[status_direction]
+                else:
+                    texture_displacement = texture_displacement_dict[ cart.get_facing() ]
+                k = x - cart.get_height() + texture_displacement[0] 
+                f = y + cart.get_height() + texture_displacement[1] 
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]
 
                 cart_img = self.texture_pack[ cart.get_name_facing() ] 
+                scale_dict = cart.get_texture_scale()
+                if status_direction in scale_dict.keys():
+                    scale = scale_dict[status_direction]
+                else:
+                    scale = scale_dict[ cart.get_facing() ]
                 size_x = self.default_tile_size[0] * self.zoom
                 size_y = self.default_tile_size[1] * self.zoom*2
+                cart_height = cart.get_height()
                 cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
                 pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
                 pos_y = position[1] * self.default_tile_size[1] * self.zoom
-                rendering_list.append([pos_x, pos_y, cart_img_scaled, cart.get_pos()])
+                rendering_list.append([pos_x, pos_y, cart_img_scaled, cart.get_pos(), cart_height])
             for cart_props in sorted(rendering_list, key=lambda x: x[1]):
-                pos_x, pos_y, cart_img_scaled, pos = cart_props
+                pos_x, pos_y, cart_img_scaled, pos, cart_height = cart_props
                 self.screen.blit( cart_img_scaled, 
                                         (pos_x + SCREEN_SIZE[0]/2,
                                          pos_y + SCREEN_SIZE[1]/2)
                                     )
             for cart_props in sorted(rendering_list, key=lambda x: x[1]):
-                pos_x, pos_y, cart_img_scaled, pos = cart_props
+                pos_x, pos_y, cart_img_scaled, pos, cart_height = cart_props
                 x, y = pos
-                if map[ str(x+1) +","+ str(y) ][0].get_height() > 0:
+                x, y = int(x), int(y)
+                if map[ str(x+1) +","+ str(y) ][0].get_height() > cart_height:
                     self.render_tile(map, (x+1, y))
-                if map[ str(x) +","+ str(y-1) ][0].get_height() > 0:
+                if map[ str(x) +","+ str(y-1) ][0].get_height() > cart_height:
                     self.render_tile(map, (x, y-1))
                 for i in range(1, map.get_chunck_size()):
                     if map[ str(x+i) +","+ str(y-i) ][0].get_height() >= i:
@@ -180,7 +193,6 @@ class Camera:
                                 (pos_x + SCREEN_SIZE[0]/2,
                                  pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
                             )
-            ...
         elif height_s < height:
             # render tile and left wall
             bg_height = self.texture_pack[ "default_bg_height_left" ]
@@ -198,32 +210,41 @@ class Camera:
                                 (pos_x + SCREEN_SIZE[0]/2,
                                  pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
                             )
-            ...
 
-        '''
-        if height:
-            bg_height = self.texture_pack[ "default_bg_height" ]
-            bg_wall = self.texture_pack[ "default_bg_wall" ]
-            bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
-            bg_height_scaled = pygame.transform.scale( bg_height, 
-                    (size_x, size_y*(height-1)*1.5))
-            dy = self.default_tile_size[1] * self.zoom / 2
-
-            self.screen.blit( bg_wall_scaled, 
-                                (pos_x + SCREEN_SIZE[0]/2,
-                                 pos_y + SCREEN_SIZE[1]/2 +size_y*(height-1))
-                            )
-            self.screen.blit( bg_height_scaled, 
-                                (pos_x + SCREEN_SIZE[0]/2,
-                                 pos_y + SCREEN_SIZE[1]/2 + size_y*0.5)
-                            )
-            '''
         self.screen.blit( tile_img_scaled, 
                             (pos_x + SCREEN_SIZE[0]/2,
                              pos_y + SCREEN_SIZE[1]/2)
                         )
         # === rendering constructions ===
-        # TODO
+        const = map[ str(j)+","+str(i) ][1]
+        if not const:
+            return
+        texture_displacement_dict = const.get_texture_displacement()
+        if "NESW" in texture_displacement_dict:
+            texture_displacement = texture_displacement_dict["NESW"]
+        else:
+            texture_displacement = texture_displacement_dict[ const.get_facing() ]
+        if tile.get_height() > self.cam_height:
+            return
+        f = i + height + texture_displacement[1] 
+        k = j - height + texture_displacement[0] 
+        position = [ k - self.position[0]*2 + f - 1,
+                     f - self.position[1] + k/2 -3*f/2 - 0.5 ]
+        pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
+        pos_y = position[1] * self.default_tile_size[1] * self.zoom
+        const_img = self.texture_pack[ const.get_name_facing() ] 
+        scale_dict = const.get_texture_scale()
+        if "NESW" in scale_dict.keys():
+            scale = scale_dict["NESW"]
+        else:
+            scale = scale_dict[ const.get_facing() ]
+        size_x = self.default_tile_size[0] * self.zoom * scale[0]
+        size_y = self.default_tile_size[1] * self.zoom * scale[1]
+        const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
+        self.screen.blit( const_img_scaled, 
+                            (pos_x + SCREEN_SIZE[0]/2,
+                             pos_y + SCREEN_SIZE[1]/2)
+                        )
  
     
     def render_bg( self, map: Map ):
@@ -285,15 +306,15 @@ class Camera:
                 const = map[ str(j)+","+str(i) ][1]
                 if not const:
                     continue
-                displacement_dict = const.get_displacement()
-                if "NESW" in displacement_dict:
-                    displacement = displacement_dict["NESW"]
+                texture_displacement_dict = const.get_texture_displacement()
+                if "NESW" in texture_displacement_dict:
+                    texture_displacement = texture_displacement_dict["NESW"]
                 else:
-                    displacement = displacement_dict[ const.get_facing() ]
+                    texture_displacement = texture_displacement_dict[ const.get_facing() ]
                 if tile.get_height() > self.cam_height:
                     continue
-                f = i + tile.get_height() + displacement[0]
-                k = j - tile.get_height() + displacement[1]
+                f = i + tile.get_height() + texture_displacement[0]
+                k = j - tile.get_height() + texture_displacement[1]
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]

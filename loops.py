@@ -4,11 +4,12 @@ import pygame
 from camera import Camera
 from tile import Tile
 from construction import Rail
+from cart import Cart
 
 from constants import SCREEN_SIZE
 
 
-def main_loop( cam, map, screen, trains_list, c_pack ):
+def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
     selected_tile = "default_basic_tile" 
     selected_constr = 0
     facing_list = "NESW"
@@ -16,17 +17,25 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
 
     while True:
         keys = pygame.key.get_pressed()
-        rail_types = list(c_pack["rail types"])
+        rail_types = list(constr_pack["rail types"])
+        cart_types = list(cart_pack["cart types"])
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # left
                     mouse_pos = pygame.mouse.get_pos()
                     pos = cam.get_tile( mouse_pos, map )
-                    if selected_constr:
+                    if selected_constr <= len(rail_types):
                         const = Rail( rail_types[selected_constr-1], 
-                                    facing_list[facing], c_pack )
+                                    facing_list[facing], constr_pack )
                         map.set_construction( pos, const )
                         cam.render_bg( map )
+                    elif selected_constr:
+                        selected_cart = selected_constr - len(rail_types) - 1
+                        list_pos = [int(x) for x in pos.split(",")]
+                        height = map[ pos ][0].get_height()
+                        cart = Cart( cart_pack, cart_types[selected_cart], 
+                                     facing_list[facing], list_pos, height )
+                        trains_list[0].add_cart(cart)
                     else:
                         map[ pos ][0].change_height(1)
                         map[ pos ][0].change_name( selected_tile )
@@ -51,7 +60,7 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
                     else:
                         cam.zoom_in(-1)
             if event.type == pygame.KEYDOWN:
-                for i in range(len(rail_types)):
+                for i in range(len(rail_types) + len(list(cart_pack["cart types"]))):
                     if event.key == (pygame.K_1 + i):
                         selected_constr = i+1
 
@@ -95,17 +104,17 @@ def main_loop( cam, map, screen, trains_list, c_pack ):
         screen.fill( (0, 0, 0) )
         a = time.time()
         cam.render( map, trains_list )
-        render_buttons( cam, screen, selected_constr, c_pack, facing )
+        render_buttons( cam, screen, selected_constr, constr_pack, cart_pack, facing )
         pygame.display.update()
         time.sleep( 0.01 )
 
-def render_buttons( cam, screen, selected_constr, c_pack, facing ):
+def render_buttons( cam, screen, selected_constr, constr_pack, cart_pack, facing ):
     facing_list = "NESW"
     dx, dy = cam.get_default_size()
     dx *= 0.6
     dy *= 0.6
     j = 0
-    rail_types = list(c_pack["rail types"])
+    rail_types = list(constr_pack["rail types"]) + list(cart_pack["cart types"])
     for rail_type in rail_types:
         texture = cam.get_texture( rail_type + "_" + facing_list[facing] )
         if rail_types[selected_constr - 1] == rail_type:

@@ -24,9 +24,9 @@ class Rail(Construction):
     come_from: list[str]
     rotate_to: dict[ str: str ]
     texture_scale: [float, float]
-    displacement: [float, float]
+    texture_displacement: [float, float]
 
-    def __init__( self, name, facing, c_pack ):
+    def __init__( self, name, facing, constr_pack ):
         self.directions = "NESW"
         self.directions_rev = {
                 "N": 0,
@@ -41,12 +41,12 @@ class Rail(Construction):
                 "Left": 3
                 }
         super().__init__( name, facing )
-        self.come_from = c_pack["rail types"][ name ]["come_from"]
-        self.rotate_to = c_pack["rail types"][ name ]["rotate_to"]
-        self.ramp_up = c_pack["rail types"][ name ]["ramp_up"]
-        self.ramp_down = c_pack["rail types"][ name ]["ramp_down"]
-        self.texture_scale = c_pack["rail types"][ name ]["texture_scale"]
-        self.displacement = c_pack["rail types"][ name ]["displacement"]
+        self.come_from = constr_pack["rail types"][ name ]["come_from"]
+        self.rotate_to = constr_pack["rail types"][ name ]["rotate_to"]
+        self.ramp_up = constr_pack["rail types"][ name ]["ramp_up"]
+        self.ramp_down = constr_pack["rail types"][ name ]["ramp_down"]
+        self.texture_scale = constr_pack["rail types"][ name ]["texture_scale"]
+        self.texture_displacement = constr_pack["rail types"][ name ]["texture_displacement"]
 
     def get_come_from( self ):
         come_fr = list()
@@ -77,8 +77,8 @@ class Rail(Construction):
         return ramp_d
     def get_texture_scale( self ):
         return self.texture_scale
-    def get_displacement( self ):
-        return self.displacement
+    def get_texture_displacement( self ):
+        return self.texture_displacement
             
 
     ...

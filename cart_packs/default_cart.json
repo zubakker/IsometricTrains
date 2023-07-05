@@ -1,0 +1,36 @@
+{
+    "cart types": {
+	"default_cart": 
+	{
+	    "mass": 1,
+	    "friction": 0.5,
+	    "power": 0,
+	    "texture_scale": {
+		"NESW": [1,1],
+		"up_NESW": [1,1],
+		"down_NESW": [1,1]
+	    },
+	    "texture_displacement": {
+		"NESW": [0,0],
+		"up_NESW": [0,0.113],
+		"down_NESW": [0,0.113]
+	    }
+	},
+	"default_engine": 
+	{
+	    "mass": 1,
+	    "friction": 0.5,
+	    "power": 0.1,
+	    "texture_scale": {
+		"NESW": [1,1],
+		"up_NESW": [1,1],
+		"down_NESW": [1,1]
+	    },
+	    "texture_displacement": {
+		"NESW": [0,0],
+		"up_NESW": [0,0.113],
+		"down_NESW": [0,0.113]
+	    }
+	}
+    }
+}
