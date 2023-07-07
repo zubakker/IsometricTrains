@@ -6,7 +6,7 @@ from math import floor
 
 from tile import Tile, Map
 
-from constants import SCREEN_SIZE
+from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH
 
 
 class Camera:
@@ -18,7 +18,7 @@ class Camera:
     default_tile_size: [float, float]
     bg_updated: bool
 
-    def __init__( self, position, zoom, screen, map ):
+    def __init__( self, position, zoom, screen, map, constr_pack, cart_pack ):
         self.position = position
         self.zoom = zoom
         self.screen = screen
@@ -31,7 +31,8 @@ class Camera:
         self.cam_height = False 
 
         chunck_size = map.get_chunck_size()
-        map.load_chunck( [position[0]//chunck_size, position[1]//chunck_size] )
+        map.load_chunck( [position[0]//chunck_size, position[1]//chunck_size],
+                DEFAULT_SAVE_PATH, constr_pack, cart_pack )
 
         self.default_tile_size = [70, 41] # TEMP
         ...

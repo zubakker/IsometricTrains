@@ -16,6 +16,8 @@ class Construction:
         self.facing = facing
     def get_name_facing( self ):
         return self.name + "_" + self.facing
+    def get_name( self ):
+        return self.name
     def get_facing(self):
         return self.facing
     ...

@@ -3,6 +3,8 @@ from math import floor, ceil
 
 from item import Item
 
+from constants import GRAVITY
+
 
 def load_cart_pack( name ):
     inp = open("cart_packs/" + name + ".json", "r").read()
@@ -35,6 +37,13 @@ class Cart:
         self.ramping_down = False
         self.stopped = False
 
+    def get_name( self ):
+        return self.name
+    def get_facing( self ):
+        return self.facing
+    def get_position( self ):
+        return self.position
+
     def get_name_facing( self ):
         if self.ramping_up:
             return self.name + "_up_" + self.facing
@@ -60,6 +69,10 @@ class Cart:
     def get_power( self ):
         if self.stopped:
             return 0
+        if self.ramping_up:
+            return self.power - self.mass * GRAVITY
+        if self.ramping_down:
+            return self.power + self.mass * GRAVITY
         return self.power
     def get_texture_scale( self ):
         return self.texture_scale
@@ -77,6 +90,8 @@ class Cart:
     def get_active_friction( self ):
         if self.stopped:
             return 0
+        if self.rotating:
+            return 2 * self.mass * self.friction * self.speed
         return self.mass * self.friction * self.speed
 
 
@@ -207,6 +222,10 @@ class Train(Cart):
             for cart in self.carts:
                 cart.set_stopped( True )
 
+    def get_stopped(self):
+        return self.stopped
+    def set_stopped(self, value):
+        self.stopped = value
 
 
 

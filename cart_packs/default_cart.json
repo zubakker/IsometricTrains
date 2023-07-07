@@ -20,11 +20,11 @@
 	{
 	    "mass": 1,
 	    "friction": 0.5,
-	    "power": 0.1,
+	    "power": 0.2,
 	    "texture_scale": {
 		"NESW": [1,1],
-		"up_NESW": [1,1],
-		"down_NESW": [1,1]
+		"up_NESW": [1.013,1.013],
+		"down_NESW": [1.013,1.013]
 	    },
 	    "texture_displacement": {
 		"NESW": [0,0],

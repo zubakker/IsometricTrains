@@ -6,7 +6,7 @@ from tile import Tile
 from construction import Rail
 from cart import Cart
 
-from constants import SCREEN_SIZE
+from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH
 
 
 def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
@@ -24,7 +24,7 @@ def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
                 if event.button == 1: # left
                     mouse_pos = pygame.mouse.get_pos()
                     pos = cam.get_tile( mouse_pos, map )
-                    if selected_constr <= len(rail_types):
+                    if selected_constr <= len(rail_types) and selected_constr:
                         const = Rail( rail_types[selected_constr-1], 
                                     facing_list[facing], constr_pack )
                         map.set_construction( pos, const )
@@ -66,8 +66,8 @@ def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
 
                 
                 if event.key == pygame.K_0:
-                    selected_tile = "default_bright_tile" 
-                    selected_constr = None
+                    selected_tile = "default_tile" 
+                    selected_constr = 0
                 if event.key == pygame.K_w:
                     a = time.time()
                     cam.render_bg( map )
@@ -78,6 +78,9 @@ def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
                     cam.move_vert( +1, map )
                 if event.key == pygame.K_r:
                     facing = (facing+1)%4
+
+                if event.key == pygame.K_w:
+                    map.save_chunck([0,0], DEFAULT_SAVE_PATH, trains_list) # TEMP
 
                     ...
         if keys[ pygame.K_LEFT ] and keys[ pygame.K_LSHIFT ]:
