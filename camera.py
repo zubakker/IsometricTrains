@@ -32,7 +32,7 @@ class Camera:
 
         chunck_size = map.get_chunck_size()
         map.load_chunck( [position[0]//chunck_size, position[1]//chunck_size],
-                DEFAULT_SAVE_PATH, constr_pack, cart_pack )
+                DEFAULT_SAVE_PATH, cart_pack, constr_pack )
 
         self.default_tile_size = [70, 41] # TEMP
         ...

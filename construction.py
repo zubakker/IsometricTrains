@@ -43,6 +43,9 @@ class Rail(Construction):
                 "Left": 3
                 }
         super().__init__( name, facing )
+        if not name:
+            self.constr_pack = constr_pack
+            return 
         self.come_from = constr_pack["rail types"][ name ]["come_from"]
         self.rotate_to = constr_pack["rail types"][ name ]["rotate_to"]
         self.ramp_up = constr_pack["rail types"][ name ]["ramp_up"]
@@ -81,6 +84,33 @@ class Rail(Construction):
         return self.texture_scale
     def get_texture_displacement( self ):
         return self.texture_displacement
+
+    def output_json( self ):
+        output = {
+                "constr_name": self.name,
+                "constr_facing": self.facing
+                }
+        return output
+    def input_json( self, json_txt ):
+        input = loads(json_txt)
+        self.name = input["constr_name"]
+        self.facing = input["constr_facing"]
+        self.come_from = self.constr_pack["rail types"][self.name ]["come_from"]
+        self.rotate_to = self.constr_pack["rail types"][self.name ]["rotate_to"]
+        self.ramp_up = self.constr_pack["rail types"][self.name ]["ramp_up"]
+        self.ramp_down = self.constr_pack["rail types"][self.name ]["ramp_down"]
+        self.texture_scale = self.constr_pack["rail types"][self.name ]["texture_scale"]
+        self.texture_displacement = self.constr_pack["rail types"][self.name ]["texture_displacement"]
+    def input_dict( self, input ):
+        self.name = input["constr_name"]
+        self.facing = input["constr_facing"]
+        self.come_from = self.constr_pack["rail types"][ self.name ]["come_from"]
+        self.rotate_to = self.constr_pack["rail types"][ self.name ]["rotate_to"]
+        self.ramp_up = self.constr_pack["rail types"][self.name ]["ramp_up"]
+        self.ramp_down = self.constr_pack["rail types"][self.name ]["ramp_down"]
+        self.texture_scale = self.constr_pack["rail types"][self.name ]["texture_scale"]
+        self.texture_displacement = self.constr_pack["rail types"][self.name ]["texture_displacement"]
+
             
 
     ...

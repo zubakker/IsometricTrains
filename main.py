@@ -14,17 +14,17 @@ from constants import SCREEN_SIZE
 screen = pygame.display.set_mode( SCREEN_SIZE )
 cart_pack = load_cart_pack("default_cart")
 constr_pack = load_construction_pack("default_rail")
-map = Map( cart_pack, constr_pack )
+map = Map( constr_pack, cart_pack )
 cam = Camera( [0, 0], 1, screen, map, constr_pack, cart_pack )
 
 
 
 # TEMP
-# cart1 = Cart( cart_pack, "default_engine", "N", [0, 1], 0 )
-# cart2 = Cart( cart_pack, "default_cart", "N", [0, 0], 0 )
-# cart3 = Cart( cart_pack, "default_cart", "N", [0, -1], 0 )
+# cart1 = Cart( cart_pack, "default_engine", "N", [-1, 1], 0 )
+# cart2 = Cart( cart_pack, "default_cart", "N", [-1, 0], 0 )
+# cart3 = Cart( cart_pack, "default_cart", "N", [-1, -1], 0 )
 
-# train = Train([cart1, cart2, cart3])
+# train = Train( cart_pack, [cart1, cart2, cart3])
 trains_list = list()
 # trains_list.append(train)
  

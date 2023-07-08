@@ -24,7 +24,20 @@ class Tile:
         self.height += change
     def change_name( self, name ):
         self.name = name
-    ...
+
+    def output_json(self):
+        output = {
+                "tile_name": self.name,
+                "tile_height":   self.height
+                }
+        return output
+    def input_json(self, json_txt):
+        input = loads(json_txt)
+        self.name = input["tile_name"]
+        self.height = input["tile_height"]
+    def input_dict(self, input):
+        self.name = input["tile_name"]
+        self.height = input["tile_height"]
 
 
 class Map:
@@ -81,13 +94,14 @@ class Map:
         chunck_center[1] = str((position[1] + cs//2) // cs)
         chunck_pos = ",".join(chunck_center)
         try:
-            data = loads(open(path + "/" + chunck_pos, "r").read())
+            data = loads(open(path + "/" + chunck_pos + ".json", "r").read())
             for key, value in data.items():
-                tile = Tile( value["tile_name"], value["height"] )
+                tile = Tile('',0)
+                tile.input_dict(value)
+                # tile = Tile( value["tile_name"], value["tile_height"] )
                 if 'constr_name' in list(value):
-                    constr = Rail( value["constr_name"], 
-                                   value["constr_facing"], 
-                                   constr_pack )
+                    constr = Rail('', '', self.constr_pack)
+                    constr.input_dict(value)
                 else:
                     constr = None
                 self.set_tile( key, tile )
@@ -131,15 +145,11 @@ class Map:
 
         for key, a in self.map.items():
             tile, construction = a
-            data[key] = {
-                    "tile_name": tile.get_name(),
-                    "height":   tile.get_height()
-                    }
+            data[key] = tile.output_json()
             if construction:
-                data[key]["constr_name"] = construction.get_name()
-                data[key]["constr_facing"] = construction.get_facing()
+                data[key].update( construction.output_json() )
             
-        fout = open(path + "/" + chunck_pos, "w+")
+        fout = open(path + "/" + chunck_pos + ".json", "w+")
         fout.write(dumps(data))
         fout.close()
 

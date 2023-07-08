@@ -1,4 +1,4 @@
-from json import loads
+from json import loads, dumps
 from math import floor, ceil
 
 from item import Item
@@ -10,6 +10,30 @@ def load_cart_pack( name ):
     inp = open("cart_packs/" + name + ".json", "r").read()
     cart_pack = loads(inp)
     return cart_pack
+
+def save_trains_list( trains_list, path ):
+    file = open(path + "/trains.json", 'w+')
+    data = []
+    for train in trains_list:
+        data.append(train.output_json())
+    file.write( dumps(data) )
+    file.close()
+
+def load_trains_list( path, cart_pack ):
+    try:
+        file = open(path + "/trains.json", "r").read()
+        data = loads(file)
+
+        trains_list = list()
+        for input in data:
+            a = Train( cart_pack, [] )
+            a.input_list(input)
+            trains_list.append(a)
+        return trains_list
+    except FileNotFoundError:
+        return []
+
+
 
 
 class Cart:
@@ -24,6 +48,15 @@ class Cart:
         self.position = position
         self.height = height 
 
+        self.speed = 0.1 # TEMP
+
+        self.rotating = False
+        self.ramping_up = False
+        self.ramping_down = False
+        self.stopped = False
+        if self.name == '':
+            return
+
         self.mass = cart_pack[ "cart types" ][ name ][ "mass" ]
         self.friction = cart_pack[ "cart types" ][ name ][ "friction" ]
         self.power = cart_pack[ "cart types" ][ name ][ "power" ]
@@ -31,11 +64,6 @@ class Cart:
         self.texture_displacement = cart_pack[ "cart types" ][ name ][ "texture_displacement" ]
 
 
-        self.speed = 0.1 # TEMP
-        self.rotating = False
-        self.ramping_up = False
-        self.ramping_down = False
-        self.stopped = False
 
     def get_name( self ):
         return self.name
@@ -93,6 +121,47 @@ class Cart:
         if self.rotating:
             return 2 * self.mass * self.friction * self.speed
         return self.mass * self.friction * self.speed
+
+    def output_json(self):
+        output = {
+                "name": self.name,
+                "facing": self.facing,
+                "position": self.position,
+                "stopped": self.stopped,
+                "rotating": self.rotating,
+                "ramping_up": self.ramping_up,
+                "ramping_down": self.ramping_down
+                }
+        return output
+    def input_json(self, json_txt, cart_pack):
+        input = loads(json_txt)
+        self.name = input["name"]
+        self.facing = input["facing"]
+        self.position = input["position"]
+        self.rotating = input["rotating"]
+        self.ramping_up = input["ramping_up"]
+        self.ramping_down = input["ramping_down"]
+        self.stopped = input["stopped"]
+        self.mass = cart_pack[ "cart types" ][ self.name ][ "mass" ]
+        self.friction = cart_pack[ "cart types" ][ self.name ][ "friction" ]
+        self.power = cart_pack[ "cart types" ][ self.name ][ "power" ]
+        self.texture_scale = cart_pack[ "cart types" ][ self.name ][ "texture_scale" ]
+        self.texture_displacement = cart_pack[ "cart types" ][ self.name ][ "texture_displacement" ]
+    def input_dict(self, inp_dict, cart_pack):
+        self.name = inp_dict["name"]
+        self.facing = inp_dict["facing"]
+        self.position = inp_dict["position"]
+        self.rotating = inp_dict["rotating"]
+        self.ramping_up = inp_dict["ramping_up"]
+        self.ramping_down = inp_dict["ramping_down"]
+        self.stopped = inp_dict["stopped"]
+        self.mass = cart_pack[ "cart types" ][ self.name ][ "mass" ]
+        self.friction = cart_pack[ "cart types" ][ self.name ][ "friction" ]
+        self.power = cart_pack[ "cart types" ][ self.name ][ "power" ]
+        self.texture_scale = cart_pack[ "cart types" ][ self.name ][ "texture_scale" ]
+        self.texture_displacement = cart_pack[ "cart types" ][ self.name ][ "texture_displacement" ]
+        
+
 
 
     def update( self, map ): 
@@ -192,9 +261,10 @@ class Cart:
 
 class Train(Cart):
     carts: list[ Cart ]
-    def __init__( self, carts_list ):
+    def __init__( self, cart_pack, carts_list, ):
         self.stopped = False
         self.carts = carts_list
+        self.cart_pack = cart_pack
 
     def get_carts( self ):
         return self.carts
@@ -226,6 +296,28 @@ class Train(Cart):
         return self.stopped
     def set_stopped(self, value):
         self.stopped = value
+
+    def output_json(self):
+        output = list()
+        for cart in self.carts:
+            output.append( cart.output_json() )
+        return output
+    def input_json(self, json_txt):
+        input = loads(json_txt)
+        for cart_dict in enumerate(input):
+            c = Cart( self.cart_pack, '', '', [], 0)
+            c.input_dict(cart_dict[-1], self.cart_pack)
+            self.carts.append(c)
+    def input_list(self, input):
+        for cart_dict in enumerate(input):
+            c = Cart( self.cart_pack, '', '', [], 0)
+            c.input_dict(cart_dict[-1], self.cart_pack)
+            self.carts.append(c)
+
+
+
+
+
 
 
 
