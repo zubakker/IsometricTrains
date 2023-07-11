@@ -3,28 +3,66 @@
 	"default_rail_straight":
 	    {
 		"come_from": ["Front", "Back"],
-		"rotate_to": {},
+		"rotate_by": {},
 		"ramp_up": {},
 		"ramp_down": {},
 		"texture_scale": {"NESW": [1,1]},
-		"texture_displacement": {"NESW": [0,0]}
+		"texture_displacement": {"NESW": [0,0]},
+		"layer_displacement": {"NESW": [0, 0]}
 	    },
 	"default_rail_curved":
 	    {
 		"come_from": ["Front", "Left"],
-		"rotate_to": { 
-				"Front": "Left",
-				"Left": "Front"
+		"rotate_by": {
+				"Front": -1,
+				"Left": 1 
 		},
 		"ramp_up": {},
 		"ramp_down": {},
 		"texture_scale": {"NESW": [1,1]},
-		"texture_displacement": {"NESW": [0,0]}
+		"texture_displacement": {"NESW": [0,0]},
+		"layer_displacement": {"NESW": [0, 0]}
+	    },
+	"default_rail_curved_big":
+	    {
+		"come_from": ["Front", "Left"],
+		"rotate_by": {
+				"Front": -0.33333,
+				"Left": 0.33333 
+		},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": {
+		    "N": [2,1.5],
+		    "E": [1,2],
+		    "S": [2,1.5],
+		    "W": [1,2]
+		},
+		"texture_displacement": {
+		    "N": [-1,0],
+		    "E": [0,-1],
+		    "S": [0,-1],
+		    "W": [1,0]
+		},
+		"layer_displacement": {"NESW": [1, 1]}
+	    },
+	"default_rail_curved_big_nr":
+	    {
+		"come_from": ["Front", "Left"],
+		"rotate_by": {
+				"Front": -0.33333,
+				"Left": 0.33333 
+		},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": {"NESW": [0,0]},
+		"texture_displacement": {"NESW": [0,0]},
+		"layer_displacement": {"NESW": [0, 0]}
 	    },
 	"default_rail_ramp_up":
 	    {
 		"come_from": ["Front", "Back"],
-		"rotate_to": {},
+		"rotate_by": {},
 		"ramp_up": {"Back": "Front"},
 		"ramp_down": {"Front": "Back"},
 		"texture_scale": {
@@ -38,25 +76,28 @@
 		    "E": [0.5,-0.5],
 		    "N": [1,-1],
 		    "S": [0.5,-0.5]
-		}
+		},
+		"layer_displacement": {"NESW": [0, 0]}
 	    },
 	"default_rail_junction_four_way":
 	    {
 		"come_from": ["Front", "Back", "Left", "Right"],
-		"rotate_to": {},
+		"rotate_by": {},
 		"ramp_up": {},
 		"ramp_down": {},
 		"texture_scale": {"NESW": [1,1]},
-		"texture_displacement": {"NESW": [0,0]}
+		"texture_displacement": {"NESW": [0,0]},
+		"layer_displacement": {"NESW": [0, 0]}
 	    },
 	"default_rail_one_way":
 	    {
 		"come_from": ["Back"],
-		"rotate_to": {},
+		"rotate_by": {},
 		"ramp_up": {},
 		"ramp_down": {},
 		"texture_scale": {"NESW": [1,1]},
-		"texture_displacement": {"NESW": [0,0]}
+		"texture_displacement": {"NESW": [0,0]},
+		"layer_displacement": {"NESW": [0, 0]}
 	    }
     }
 }

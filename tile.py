@@ -106,17 +106,6 @@ class Map:
                     constr = None
                 self.set_tile( key, tile )
                 self.set_construction( key, constr )
-                '''
-            trains_list = list()
-            for i, train in enumerate(data["trains_list"]):
-                trains_list.append(Train())
-                for cart in train:
-                    one_cart =  Cart( cart_pack, cart["name"], cart["facing"], cart["height"] )
-                    one_cart.set_stopped( cart["stopped"] )
-                    trains_list[i].add_cart( one_cart )
-            return trains_list
-        '''
-
                     
         except FileNotFoundError:
         # if chunck hasn't been saved (it wasn't generated)
@@ -128,21 +117,6 @@ class Map:
         chunck_center[1] = str((position[1] + cs//2) // cs)
         chunck_pos = ",".join(chunck_center)
         data = dict()
-        '''
-        data["trains_list"] = list()
-        for i, train in enumerate(trains_list):
-            data["trains_list"].append(  list() )
-            for cart in train.get_carts():
-                data["trains_list"][i] = {
-                            "name": cart.get_name(),
-                            "facing": cart.get_facing(),
-                            "position": cart.get_position(),
-                            "height": cart.get_height(),
-                            "stopped": cart.get_stopped()
-                        }
-                '''
-
-
         for key, a in self.map.items():
             tile, construction = a
             data[key] = tile.output_json()

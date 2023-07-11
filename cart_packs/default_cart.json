@@ -3,7 +3,7 @@
 	"default_cart": 
 	{
 	    "mass": 1,
-	    "friction": 0.5,
+	    "friction": 0.001,
 	    "power": 0,
 	    "texture_scale": {
 		"NESW": [1,1],
@@ -20,7 +20,7 @@
 	{
 	    "mass": 1,
 	    "friction": 0.5,
-	    "power": 0.2,
+	    "power": 0.03,
 	    "texture_scale": {
 		"NESW": [1,1],
 		"up_NESW": [1.013,1.013],

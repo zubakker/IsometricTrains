@@ -32,7 +32,7 @@ class Camera:
 
         chunck_size = map.get_chunck_size()
         map.load_chunck( [position[0]//chunck_size, position[1]//chunck_size],
-                DEFAULT_SAVE_PATH, cart_pack, constr_pack )
+                DEFAULT_SAVE_PATH, constr_pack, cart_pack )
 
         self.default_tile_size = [70, 41] # TEMP
         ...
@@ -262,9 +262,14 @@ class Camera:
         swt = int(screen_w_tiles + 0.99)
         sht = int(screen_w_tiles + 0.99) # TEMP
 
+        render_queue = list()
+
         for i in range( y_1+sht, y_0-sht-1, -1 ): 
+
+
             # -sht/swt needed to load 3 chuncks around center of the screen
             for j in range( x_0-swt, x_1+swt+1 ):
+
                 # === rendering tiles ===
                 tile = map[ str(j)+","+str(i) ][0]
                 height = tile.get_height()
@@ -304,6 +309,14 @@ class Camera:
                                      pos_y + 3*SCREEN_SIZE[1]/2)
                                 )
                 # === rendering constructions ===
+                for t, construction in enumerate(render_queue):
+                    if construction[0] == [j,i]:
+                        pos_x, pos_y, const_img_scaled = construction[1]
+                        self.background.blit( const_img_scaled, 
+                                            (pos_x + 3*SCREEN_SIZE[0]/2,
+                                             pos_y + 3*SCREEN_SIZE[1]/2)
+                                        )
+                        render_queue.pop(t)
                 const = map[ str(j)+","+str(i) ][1]
                 if not const:
                     continue
@@ -330,6 +343,17 @@ class Camera:
                 const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
                 pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
                 pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                layer_dict = const.get_layer_displacement()
+                if "NESW" in layer_dict.keys():
+                    layer = layer_dict["NESW"]
+                else:
+                    layer = layer_dict[ const.get_facing() ]
+
+                if layer != [0,0]:
+                    layer_x, layer_y = layer
+                    render_queue.append( [[layer_x+j, -layer_y+i], [pos_x, pos_y, const_img_scaled]] )
+                    continue
+                    
                 self.background.blit( const_img_scaled, 
                                     (pos_x + 3*SCREEN_SIZE[0]/2,
                                      pos_y + 3*SCREEN_SIZE[1]/2)

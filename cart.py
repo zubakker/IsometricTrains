@@ -1,5 +1,7 @@
 from json import loads, dumps
-from math import floor, ceil
+from math import floor, ceil, cos, sin
+
+from math import pi
 
 from item import Item
 
@@ -62,6 +64,13 @@ class Cart:
         self.power = cart_pack[ "cart types" ][ name ][ "power" ]
         self.texture_scale = cart_pack[ "cart types" ][ name ][ "texture_scale" ]
         self.texture_displacement = cart_pack[ "cart types" ][ name ][ "texture_displacement" ]
+        
+        self.rotation = [{ 
+                "E": 0,
+                "N": 1,
+                "W": 2,
+                "S": 3
+                }[self.facing] * pi / 2, 0]
 
 
 
@@ -161,101 +170,71 @@ class Cart:
         self.texture_scale = cart_pack[ "cart types" ][ self.name ][ "texture_scale" ]
         self.texture_displacement = cart_pack[ "cart types" ][ self.name ][ "texture_displacement" ]
         
-
-
-
-    def update( self, map ): 
-        negative_list = {
+    def update( self, map):
+        if self.stopped:
+            self.stopped = False
+            return 
+        negative_dict = {
                             "N": "S",
                             "S": "N",
                             "E": "W",
                             "W": "E"
                         }
+        facing_by_angle = "ENWS"
+        self.rotating = False
+        self.ramping_up = False
+        self.ramping_down = False
         x, y = self.position
-        x_1, y_1 = self.position
 
-        if self.facing == "N":
-            y = ceil( self.position[1] + self.speed )
-            y_1 = self.position[1]+self.speed
-            rotation_allowed = ceil( y_1 + self.speed ) > ceil(y_1)
-        if self.facing == "S":
-            y = floor( self.position[1] - self.speed )
-            y_1 = self.position[1]-self.speed
-            rotation_allowed = ceil( y_1 - self.speed ) < ceil(y_1)
-        if self.facing == "E":
-            x = ceil( self.position[0] + self.speed )
-            x_1 = self.position[0]+self.speed
-            rotation_allowed = ceil( x_1 + self.speed ) > ceil(x_1)
-        if self.facing == "W":
-            x = floor( self.position[0] - self.speed )
-            x_1 = self.position[0]-self.speed
-            rotation_allowed = ceil( x_1 - self.speed ) < ceil(x_1)
+        x += cos(self.rotation[0]) * self.speed
+        y += sin(self.rotation[0]) * self.speed
+        # self.height += self.rotation[1] * self.speed
 
-        if self.ramping_up in ["N","S"]:
-            self.height += self.speed
-        if self.ramping_up in ["W","E"]:
-            self.height += self.speed
-        if self.ramping_down in ["N","S"]:
-            self.height -= self.speed
-        if self.ramping_down in ["W","E"]:
-            self.height -= self.speed
+        tile, constr = map[ str(round(x)) + "," + str(round(y)) ]
 
-
-        tile, constr = map[ str(x) + "," + str(y) ]
-        neg_facing = negative_list[self.facing]
         if not constr:
             # either goes off the rail or stops completely
             # TEMP does nothing
             self.stopped = True
             return True
-        if abs(tile.get_height() - self.height) > 1:
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            self.stopped = True
-            return True
-        if tile.get_height() == self.height - 1 and \
-                neg_facing not in list(constr.get_ramp_down()):
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            self.stopped = True
-            return True
-        if tile.get_height() == self.height + 1 and \
-                neg_facing not in list(constr.get_ramp_up()):
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            self.stopped = True
-            return True
+        neg_facing = negative_dict[self.facing]
+        rel_rotation = constr.rotate( neg_facing )
+        if rel_rotation[0] != 0:
+            self.rotating = True
+        if rel_rotation[1] > 0:
+            self.ramping_up = True
+        if rel_rotation[1] < 0:
+            self.ramping_down = True
 
-        if self.stopped:
-            self.stopped = False
-            return 
-        if self.rotating and rotation_allowed:
-            self.facing = self.rotating
-            self.position[0] = round(x_1)
-            self.position[1] = round(y_1)
-            self.rotating = False
-            return False
-        if (self.ramping_up or self.ramping_down) and rotation_allowed:
-            self.position[0] = round(x_1)
-            self.position[1] = round(y_1)
-            self.height = round(self.height)
-            self.ramping_up = False
-            self.ramping_down = False
-            return False
-        
+        self.rotation[0] += rel_rotation[0] * self.speed
+        self.rotation[1] += rel_rotation[1] * self.speed
 
-        if neg_facing in constr.get_come_from():
-            self.position = [x_1, y_1]
-            rotation_dict = constr.get_rotate_to()
-            ramp_up_dict = constr.get_ramp_up()
-            ramp_down_dict = constr.get_ramp_down()
-            if neg_facing in list(rotation_dict):
-                self.rotating = rotation_dict[ neg_facing ]
-            if neg_facing in list(ramp_up_dict):
-                self.ramping_up = ramp_up_dict[ neg_facing ]
-            if neg_facing in list(ramp_down_dict):
-                self.ramping_down = ramp_down_dict[ neg_facing ]
+        if not self.rotating:
+            angle = round(2*self.rotation[0]/pi) % 4
+            self.rotation[0] = angle*pi / 2
+            self.facing = facing_by_angle[angle]
+
+            if -0.0001 <= cos(self.rotation[0]) <= 0.0001:
+                x = round(x)
+            if -0.0001 <= sin(self.rotation[0]) <= 0.0001:
+                y = round(y)
+
+        ramp_up_dir = constr.get_ramp_up()
+        ramp_down_dir = constr.get_ramp_down()
+
+        if neg_facing in ramp_up_dir:
+            self.ramping_up = True
+            self.height += self.speed
+        if neg_facing in ramp_down_dir:
+            self.ramping_up = True
+            self.height += self.speed
+
+        self.position[0] = x
+        self.position[1] = y
+
         self.stopped = False
+
+
 
 
 

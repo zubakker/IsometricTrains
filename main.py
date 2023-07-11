@@ -20,13 +20,13 @@ cam = Camera( [0, 0], 1, screen, map, constr_pack, cart_pack )
 
 
 # TEMP
-# cart1 = Cart( cart_pack, "default_engine", "N", [-1, 1], 0 )
+cart1 = Cart( cart_pack, "default_cart", "N", [-1, 1], 0 )
 # cart2 = Cart( cart_pack, "default_cart", "N", [-1, 0], 0 )
 # cart3 = Cart( cart_pack, "default_cart", "N", [-1, -1], 0 )
 
-# train = Train( cart_pack, [cart1, cart2, cart3])
+train = Train( cart_pack, [cart1]) # , cart2, cart3])
 trains_list = list()
-# trains_list.append(train)
+trains_list.append(train)
  
 
 main_loop( cam, map, screen, trains_list, constr_pack, cart_pack )

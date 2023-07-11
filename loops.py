@@ -15,7 +15,7 @@ def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
     selected_tile = "default_basic_tile" 
     selected_constr = 0
     facing_list = "NESW"
-    facing = 0
+    facing = 0 
 
     while True:
         keys = pygame.key.get_pressed()
