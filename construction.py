@@ -30,7 +30,8 @@ class Rail(Construction):
     texture_scale: [float, float]
     texture_displacement: [float, float]
 
-    def __init__( self, name, facing, constr_pack ):
+    def __init__( self, name, facing, constr_pack, type="rail" ):
+        self.type = type
         self.directions = "NESW"
         self.directions_rev = {
                 "N": 0,
@@ -49,13 +50,15 @@ class Rail(Construction):
         if not name:
             self.constr_pack = constr_pack
             return 
-        self.come_from = constr_pack["rail types"][ name ]["come_from"]
-        self.rotate_by = constr_pack["rail types"][ name ]["rotate_by"]
-        self.ramp_up = constr_pack["rail types"][ name ]["ramp_up"]
-        self.ramp_down = constr_pack["rail types"][ name ]["ramp_down"]
-        self.texture_scale = constr_pack["rail types"][ name ]["texture_scale"]
-        self.texture_displacement = constr_pack["rail types"][ name ]["texture_displacement"]
-        self.layer_displacement = constr_pack["rail types"][ name ]["layer_displacement"]
+        self.come_from = constr_pack[self.type + " types"][ name ]["come_from"]
+        self.rotate_by = constr_pack[self.type + " types"][ name ]["rotate_by"]
+        self.ramp_up = constr_pack[self.type + " types"][ name ]["ramp_up"]
+        self.ramp_down = constr_pack[self.type + " types"][ name ]["ramp_down"]
+        self.texture_scale = constr_pack[self.type + " types"][ name ]["texture_scale"]
+        self.texture_displacement = constr_pack[self.type + " types"][ name ]["texture_displacement"]
+        self.layer_displacement = constr_pack[self.type + " types"][ name ]["layer_displacement"]
+    def get_type(self):
+        return self.type
 
     def get_come_from( self ):
         come_fr = list()
@@ -104,33 +107,45 @@ class Rail(Construction):
 
     def output_json( self ):
         output = {
+                "constr_type": self.type,
                 "constr_name": self.name,
                 "constr_facing": self.facing
                 }
         return output
-    def input_json( self, json_txt ):
-        input = loads(json_txt)
-        self.name = input["constr_name"]
-        self.facing = input["constr_facing"]
-        self.come_from = self.constr_pack["rail types"][self.name ]["come_from"]
-        self.rotate_by = self.constr_pack["rail types"][self.name ]["rotate_by"]
-        self.ramp_up = self.constr_pack["rail types"][self.name ]["ramp_up"]
-        self.ramp_down = self.constr_pack["rail types"][self.name ]["ramp_down"]
-        self.texture_scale = self.constr_pack["rail types"][self.name ]["texture_scale"]
-        self.texture_displacement = self.constr_pack["rail types"][self.name ]["texture_displacement"]
-        self.layer_displacement = self.constr_pack["rail types"][self.name ]["layer_displacement"]
     def input_dict( self, input ):
         self.name = input["constr_name"]
         self.facing = input["constr_facing"]
-        self.come_from = self.constr_pack["rail types"][ self.name ]["come_from"]
-        self.rotate_by = self.constr_pack["rail types"][self.name ]["rotate_by"]
-        self.ramp_up = self.constr_pack["rail types"][self.name ]["ramp_up"]
-        self.ramp_down = self.constr_pack["rail types"][self.name ]["ramp_down"]
-        self.texture_scale = self.constr_pack["rail types"][self.name ]["texture_scale"]
-        self.texture_displacement = self.constr_pack["rail types"][self.name ]["texture_displacement"]
-        self.layer_displacement = self.constr_pack["rail types"][self.name ]["layer_displacement"]
+        self.come_from = self.constr_pack[self.type + " types"][ self.name ]["come_from"]
+        self.rotate_by = self.constr_pack[self.type + " types"][self.name ]["rotate_by"]
+        self.ramp_up = self.constr_pack[self.type + " types"][self.name ]["ramp_up"]
+        self.ramp_down = self.constr_pack[self.type + " types"][self.name ]["ramp_down"]
+        self.texture_scale = self.constr_pack[self.type + " types"][self.name ]["texture_scale"]
+        self.texture_displacement = self.constr_pack[self.type + " types"][self.name ]["texture_displacement"]
+        self.layer_displacement = self.constr_pack[self.type + " types"][self.name ]["layer_displacement"]
+    def input_json( self, json_txt ):
+        input = loads(json_txt)
+        self.input_dict(input)
+        '''
+        self.name = input["constr_name"]
+        self.facing = input["constr_facing"]
+        self.come_from = self.constr_pack[self.type + " types"][self.name ]["come_from"]
+        self.rotate_by = self.constr_pack[self.type + " types"][self.name ]["rotate_by"]
+        self.ramp_up = self.constr_pack[self.type + " types"][self.name ]["ramp_up"]
+        self.ramp_down = self.constr_pack[self.type + " types"][self.name ]["ramp_down"]
+        self.texture_scale = self.constr_pack[self.type + " types"][self.name ]["texture_scale"]
+        self.texture_displacement = self.constr_pack[self.type + " types"][self.name ]["texture_displacement"]
+        self.layer_displacement = self.constr_pack[self.type + " types"][self.name ]["layer_displacement"]
+        '''
 
 
 class Station(Rail):
+    def __init__( self, name, facing, constr_pack ):
+        super().__init__(name, facing, constr_pack, type="station")
+        self.status = "stopping"
+
+    def get_status(self):
+        return self.status
+    def set_status(self, status):
+        self.status = status
     ...
     

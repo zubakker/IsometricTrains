@@ -2,7 +2,7 @@ from json import dumps, loads
 
 from perlin_numpy import generate_perlin_noise_2d
 
-from construction import Rail
+from construction import Rail, Station
 
 from constants import CHUNCK_SIZE, DEFAULT_SAVE_PATH
 
@@ -98,9 +98,11 @@ class Map:
             for key, value in data.items():
                 tile = Tile('',0)
                 tile.input_dict(value)
-                # tile = Tile( value["tile_name"], value["tile_height"] )
                 if 'constr_name' in list(value):
-                    constr = Rail('', '', self.constr_pack)
+                    if value["constr_type"] == "station":
+                        constr = Station('','', self.constr_pack)
+                    else:
+                        constr = Rail('', '', self.constr_pack)
                     constr.input_dict(value)
                 else:
                     constr = None

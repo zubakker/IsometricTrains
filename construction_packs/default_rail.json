@@ -99,5 +99,27 @@
 		"texture_displacement": {"NESW": [0,0]},
 		"layer_displacement": {"NESW": [0, 0]}
 	    }
+    },
+    "station types": {
+	"default_station_one_platform_two_way":
+	    {
+		"come_from": ["Front", "Back"],
+		"rotate_by": {},
+		"ramp_up": {},
+		"ramp_down": {},
+		"texture_scale": {"NESW": [1.5,1.5]},
+		"texture_displacement": {
+		    "N": [0,-1],
+		    "E": [0.5,-0.5],
+		    "S": [0,0],
+		    "W": [-0.5,-0.5]
+		},
+		"layer_displacement": {
+		    "N": [0, 0],
+		    "E": [0, 1],
+		    "S": [1, 0],
+		    "W": [0, 1]
+		}
+	    }
     }
 }

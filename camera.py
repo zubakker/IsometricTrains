@@ -6,7 +6,7 @@ from math import floor
 
 from tile import Tile, Map
 
-from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH
+from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH, DEFAULT_TILE_SIZE
 
 
 class Camera:
@@ -34,8 +34,6 @@ class Camera:
         map.load_chunck( [position[0]//chunck_size, position[1]//chunck_size],
                 DEFAULT_SAVE_PATH, constr_pack, cart_pack )
 
-        self.default_tile_size = [70, 41] # TEMP
-        ...
 
     def load_texture_pack( self, name ):
         tile_name  = "texture_packs/tiles/" + name
@@ -50,13 +48,10 @@ class Camera:
             self.texture_pack[ texture[:-4] ] = pygame.image.load(const_name +"/"+ texture)
         for texture in cart_textures:
             self.texture_pack[ texture[:-4] ] = pygame.image.load(cart_name  +"/"+ texture)
-        ...
     def get_texture( self, name ):
         if name not in list(self.texture_pack):
             return None 
         return self.texture_pack[name]
-    def get_default_size(self):
-        return self.default_tile_size
     def get_position( self):
         return self.position
 
@@ -66,8 +61,8 @@ class Camera:
 
         dx = self.position[0] - self.bg_position[0]
         dy = self.position[1] - self.bg_position[1]
-        posx = -SCREEN_SIZE[0] - self.default_tile_size[0]*dx*self.zoom
-        posy = -SCREEN_SIZE[1] - self.default_tile_size[1]*dy*self.zoom
+        posx = -SCREEN_SIZE[0] - DEFAULT_TILE_SIZE[0]*dx*self.zoom
+        posy = -SCREEN_SIZE[1] - DEFAULT_TILE_SIZE[1]*dy*self.zoom
         if posx > 0 or posy > 0:
             self.render_bg( map )
         if posx + SCREEN_SIZE[0]*2 < 0 or posy + SCREEN_SIZE[1]*2 < 0:
@@ -99,12 +94,12 @@ class Camera:
                     scale = scale_dict[status_direction]
                 else:
                     scale = scale_dict[ cart.get_facing() ]
-                size_x = self.default_tile_size[0] * self.zoom
-                size_y = self.default_tile_size[1] * self.zoom*2
+                size_x = DEFAULT_TILE_SIZE[0] * self.zoom
+                size_y = DEFAULT_TILE_SIZE[1] * self.zoom*2
                 cart_height = cart.get_height()
                 cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
-                pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
-                pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom
+                pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
                 rendering_list.append([pos_x, pos_y, cart_img_scaled, cart.get_pos(), cart_height])
             for cart_props in sorted(rendering_list, key=lambda x: x[1]):
                 pos_x, pos_y, cart_img_scaled, pos, cart_height = cart_props
@@ -152,11 +147,11 @@ class Camera:
         # converting isometric coords into coords on screen
         position = [ k - self.position[0]*2 + f - 1,
                      f - self.position[1] + k/2 -3*f/2 - 0.5 ]
-        size_x = self.default_tile_size[0] * self.zoom
-        size_y = self.default_tile_size[1] * self.zoom
+        size_x = DEFAULT_TILE_SIZE[0] * self.zoom
+        size_y = DEFAULT_TILE_SIZE[1] * self.zoom
         tile_img_scaled = pygame.transform.scale( tile_img, (size_x, size_y) )
-        pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
-        pos_y = position[1] * self.default_tile_size[1] * self.zoom
+        pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom
+        pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
 
         if height_s < height and height_e < height:
             # render tile and walls 
@@ -166,7 +161,7 @@ class Camera:
             bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
             bg_height_scaled = pygame.transform.scale( bg_height, 
                     (size_x, size_y*(wall_height-0.5)))
-            dy = self.default_tile_size[1] * self.zoom / 2
+            dy = DEFAULT_TILE_SIZE[1] * self.zoom / 2
 
             self.screen.blit( bg_wall_scaled, 
                                 (pos_x + SCREEN_SIZE[0]/2,
@@ -184,7 +179,7 @@ class Camera:
             bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
             bg_height_scaled = pygame.transform.scale( bg_height, 
                     (size_x, size_y*(height-0.5)))
-            dy = self.default_tile_size[1] * self.zoom / 2
+            dy = DEFAULT_TILE_SIZE[1] * self.zoom / 2
 
             self.screen.blit( bg_wall_scaled, 
                                 (pos_x + SCREEN_SIZE[0]/2,
@@ -201,7 +196,7 @@ class Camera:
             bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
             bg_height_scaled = pygame.transform.scale( bg_height, 
                     (size_x, size_y*(height-0.5)))
-            dy = self.default_tile_size[1] * self.zoom / 2
+            dy = DEFAULT_TILE_SIZE[1] * self.zoom / 2
 
             self.screen.blit( bg_wall_scaled, 
                                 (pos_x + SCREEN_SIZE[0]/2,
@@ -231,16 +226,16 @@ class Camera:
         k = j - height + texture_displacement[0] 
         position = [ k - self.position[0]*2 + f - 1,
                      f - self.position[1] + k/2 -3*f/2 - 0.5 ]
-        pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
-        pos_y = position[1] * self.default_tile_size[1] * self.zoom
+        pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom
+        pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
         const_img = self.texture_pack[ const.get_name_facing() ] 
         scale_dict = const.get_texture_scale()
         if "NESW" in scale_dict.keys():
             scale = scale_dict["NESW"]
         else:
             scale = scale_dict[ const.get_facing() ]
-        size_x = self.default_tile_size[0] * self.zoom * scale[0]
-        size_y = self.default_tile_size[1] * self.zoom * scale[1]
+        size_x = DEFAULT_TILE_SIZE[0] * self.zoom * scale[0]
+        size_y = DEFAULT_TILE_SIZE[1] * self.zoom * scale[1]
         const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
         self.screen.blit( const_img_scaled, 
                             (pos_x + SCREEN_SIZE[0]/2,
@@ -251,8 +246,8 @@ class Camera:
     def render_bg( self, map: Map ):
         self.background.fill((0,0,0))
         # -- Define which coords are on screen --
-        screen_w_tiles = SCREEN_SIZE[0] / (self.default_tile_size[0] * self.zoom)
-        screen_h_tiles = SCREEN_SIZE[1] / (self.default_tile_size[1] * self.zoom)
+        screen_w_tiles = SCREEN_SIZE[0] / (DEFAULT_TILE_SIZE[0] * self.zoom)
+        screen_h_tiles = SCREEN_SIZE[1] / (DEFAULT_TILE_SIZE[1] * self.zoom)
         x_0 = int(-screen_w_tiles/2 + self.position[0]/2)
         x_1 = int(+screen_w_tiles/2 + self.position[0]/2)
 
@@ -282,11 +277,11 @@ class Camera:
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]
-                size_x = self.default_tile_size[0] * self.zoom
-                size_y = self.default_tile_size[1] * self.zoom
+                size_x = DEFAULT_TILE_SIZE[0] * self.zoom
+                size_y = DEFAULT_TILE_SIZE[1] * self.zoom
                 tile_img_scaled = pygame.transform.scale( tile_img, (size_x, size_y) )
-                pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
-                pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom
+                pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
 
                 if height:
                     bg_height = self.texture_pack[ "default_bg_height" ]
@@ -294,7 +289,7 @@ class Camera:
                     bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
                     bg_height_scaled = pygame.transform.scale( bg_height, 
                             (size_x, size_y*(height-1)*1.5))
-                    dy = self.default_tile_size[1] * self.zoom / 2
+                    dy = DEFAULT_TILE_SIZE[1] * self.zoom / 2
 
                     self.background.blit( bg_wall_scaled, 
                                         (pos_x + 3*SCREEN_SIZE[0]/2,
@@ -338,11 +333,11 @@ class Camera:
                     scale = scale_dict["NESW"]
                 else:
                     scale = scale_dict[ const.get_facing() ]
-                size_x = self.default_tile_size[0] * self.zoom * scale[0]
-                size_y = self.default_tile_size[1] * self.zoom * scale[1]
+                size_x = DEFAULT_TILE_SIZE[0] * self.zoom * scale[0]
+                size_y = DEFAULT_TILE_SIZE[1] * self.zoom * scale[1]
                 const_img_scaled = pygame.transform.scale( const_img, (size_x, size_y) )
-                pos_x = (position[0]/2) * self.default_tile_size[0] * self.zoom
-                pos_y = position[1] * self.default_tile_size[1] * self.zoom
+                pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom
+                pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
                 layer_dict = const.get_layer_displacement()
                 if "NESW" in layer_dict.keys():
                     layer = layer_dict["NESW"]
@@ -362,7 +357,7 @@ class Camera:
         self.bg_updated = True
 
     def get_tile( self, screen_coords, map ):
-        scale = self.default_tile_size[1] * self.zoom
+        scale = DEFAULT_TILE_SIZE[1] * self.zoom
         tx = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
         ty = ((3**0.5) / 3) * ((screen_coords[0] - SCREEN_SIZE[0]/2) / scale) + self.position[0]
         tx += (screen_coords[1] - SCREEN_SIZE[1]/2) / scale + self.position[1]

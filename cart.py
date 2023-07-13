@@ -142,20 +142,6 @@ class Cart:
                 "ramping_down": self.ramping_down
                 }
         return output
-    def input_json(self, json_txt, cart_pack):
-        input = loads(json_txt)
-        self.name = input["name"]
-        self.facing = input["facing"]
-        self.position = input["position"]
-        self.rotating = input["rotating"]
-        self.ramping_up = input["ramping_up"]
-        self.ramping_down = input["ramping_down"]
-        self.stopped = input["stopped"]
-        self.mass = cart_pack[ "cart types" ][ self.name ][ "mass" ]
-        self.friction = cart_pack[ "cart types" ][ self.name ][ "friction" ]
-        self.power = cart_pack[ "cart types" ][ self.name ][ "power" ]
-        self.texture_scale = cart_pack[ "cart types" ][ self.name ][ "texture_scale" ]
-        self.texture_displacement = cart_pack[ "cart types" ][ self.name ][ "texture_displacement" ]
     def input_dict(self, inp_dict, cart_pack):
         self.name = inp_dict["name"]
         self.facing = inp_dict["facing"]
@@ -169,6 +155,9 @@ class Cart:
         self.power = cart_pack[ "cart types" ][ self.name ][ "power" ]
         self.texture_scale = cart_pack[ "cart types" ][ self.name ][ "texture_scale" ]
         self.texture_displacement = cart_pack[ "cart types" ][ self.name ][ "texture_displacement" ]
+    def input_json(self, json_txt, cart_pack):
+        input = loads(json_txt)
+        self.input_dict(input)
         
     def update( self, map):
         if self.stopped:
@@ -197,6 +186,16 @@ class Cart:
             # TEMP does nothing
             self.stopped = True
             return True
+        if constr.get_type() == "station" and \
+                abs(self.position[0] - round(self.position[0])) < self.speed and \
+                abs(self.position[1] - round(self.position[1])) < self.speed and \
+                constr.get_status() == "stopping":
+            self.position[0] = round(x)
+            self.position[1] = round(y)
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            self.stopped = True
+            return True
         neg_facing = negative_dict[self.facing]
         rel_rotation = constr.rotate( neg_facing )
         if rel_rotation[0] != 0:
@@ -218,6 +217,7 @@ class Cart:
                 x = round(x)
             if -0.0001 <= sin(self.rotation[0]) <= 0.0001:
                 y = round(y)
+
 
         ramp_up_dir = constr.get_ramp_up()
         ramp_down_dir = constr.get_ramp_down()
