@@ -52,9 +52,6 @@ class Cart:
 
         self.speed = 0.1 # TEMP
 
-        self.rotating = False
-        self.ramping_up = False
-        self.ramping_down = False
         self.stopped = False
         if self.name == '':
             return
@@ -82,16 +79,18 @@ class Cart:
         return self.position
 
     def get_name_facing( self ):
-        if self.ramping_up:
-            return self.name + "_up_" + self.facing
-        if self.ramping_down:
-            return self.name + "_down_" + self.facing
+        ### TEMP ###
+        # if self.ramping_up:
+            # return self.name + "_up_" + self.facing
+        # if self.ramping_down:
+            # return self.name + "_down_" + self.facing
         return self.name + "_" + self.facing
     def get_status( self ):
-        if self.ramping_up:
-            return "up_"
-        if self.ramping_down:
-            return "down_"
+        ### TEMP ###
+        # if self.ramping_up:
+            # return "up_"
+        # if self.ramping_down:
+            # return "down_"
         return ""
     def get_pos( self ):
         return self.position
@@ -106,11 +105,7 @@ class Cart:
     def get_power( self ):
         if self.stopped:
             return 0
-        if self.ramping_up:
-            return self.power - self.mass * GRAVITY
-        if self.ramping_down:
-            return self.power + self.mass * GRAVITY
-        return self.power
+        return self.power - sin(self.rotation[1])*self.mass * GRAVITY
     def get_texture_scale( self ):
         return self.texture_scale
     def get_texture_displacement( self ):
@@ -127,8 +122,6 @@ class Cart:
     def get_active_friction( self ):
         if self.stopped:
             return 0
-        if self.rotating:
-            return 2 * self.mass * self.friction * self.speed
         return self.mass * self.friction * self.speed
 
     def output_json(self):
@@ -137,18 +130,14 @@ class Cart:
                 "facing": self.facing,
                 "position": self.position,
                 "stopped": self.stopped,
-                "rotating": self.rotating,
-                "ramping_up": self.ramping_up,
-                "ramping_down": self.ramping_down
+                "rotation": self.rotation
                 }
         return output
     def input_dict(self, inp_dict, cart_pack):
         self.name = inp_dict["name"]
         self.facing = inp_dict["facing"]
         self.position = inp_dict["position"]
-        self.rotating = inp_dict["rotating"]
-        self.ramping_up = inp_dict["ramping_up"]
-        self.ramping_down = inp_dict["ramping_down"]
+        self.rotation = inp_dict["rotation"]
         self.stopped = inp_dict["stopped"]
         self.mass = cart_pack[ "cart types" ][ self.name ][ "mass" ]
         self.friction = cart_pack[ "cart types" ][ self.name ][ "friction" ]
@@ -177,7 +166,7 @@ class Cart:
 
         x += cos(self.rotation[0]) * self.speed
         y += sin(self.rotation[0]) * self.speed
-        # self.height += self.rotation[1] * self.speed
+        self.height += sin(self.rotation[1]) * self.speed
 
         tile, constr = map[ str(round(x)) + "," + str(round(y)) ]
 
@@ -197,37 +186,33 @@ class Cart:
             self.stopped = True
             return True
         neg_facing = negative_dict[self.facing]
-        rel_rotation = constr.rotate( neg_facing )
+        rel_rotation = constr.get_rotate_by( neg_facing )
         if rel_rotation[0] != 0:
             self.rotating = True
-        if rel_rotation[1] > 0:
+        if self.rotation[1] > 0:
             self.ramping_up = True
-        if rel_rotation[1] < 0:
+        if self.rotation[1] < 0:
             self.ramping_down = True
+
 
         self.rotation[0] += rel_rotation[0] * self.speed
         self.rotation[1] += rel_rotation[1] * self.speed
+
+        rotation = constr.get_rotate_to( neg_facing )
+        if rotation[0] != 'None':
+            self.rotation[0] = rotation[0]
+        if rotation[1] != 'None':
+            self.rotation[1] = rotation[1]
 
         if not self.rotating:
             angle = round(2*self.rotation[0]/pi) % 4
             self.rotation[0] = angle*pi / 2
             self.facing = facing_by_angle[angle]
 
-            if -0.0001 <= cos(self.rotation[0]) <= 0.0001:
+            if -abs(self.speed) <= cos(self.rotation[0]) <= abs(self.speed):
                 x = round(x)
-            if -0.0001 <= sin(self.rotation[0]) <= 0.0001:
+            if -abs(self.speed) <= sin(self.rotation[0]) <= abs(self.speed):
                 y = round(y)
-
-
-        ramp_up_dir = constr.get_ramp_up()
-        ramp_down_dir = constr.get_ramp_down()
-
-        if neg_facing in ramp_up_dir:
-            self.ramping_up = True
-            self.height += self.speed
-        if neg_facing in ramp_down_dir:
-            self.ramping_up = True
-            self.height += self.speed
 
         self.position[0] = x
         self.position[1] = y

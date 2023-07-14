@@ -52,8 +52,10 @@ class Rail(Construction):
             return 
         self.come_from = constr_pack[self.type + " types"][ name ]["come_from"]
         self.rotate_by = constr_pack[self.type + " types"][ name ]["rotate_by"]
-        self.ramp_up = constr_pack[self.type + " types"][ name ]["ramp_up"]
-        self.ramp_down = constr_pack[self.type + " types"][ name ]["ramp_down"]
+        self.rotate_to = constr_pack[self.type + " types"][ name ]["rotate_to"]
+        self.required_tiles = constr_pack[self.type + " types"][ name ]["required_tiles"]
+        self.texture_scale = constr_pack[self.type + " types"][ name ]["texture_scale"]
+        self.texture_displacement = constr_pack[self.type + " types"][ name ]["texture_displacement"]
         self.texture_scale = constr_pack[self.type + " types"][ name ]["texture_scale"]
         self.texture_displacement = constr_pack[self.type + " types"][ name ]["texture_displacement"]
         self.layer_displacement = constr_pack[self.type + " types"][ name ]["layer_displacement"]
@@ -66,37 +68,29 @@ class Rail(Construction):
             key = (self.directions_rev[self.facing] + self.rel_directions_rev[dir])%4
             come_fr.append(self.directions[key])
         return come_fr
-    def get_rotate_to( self ):
-        rotate_t = dict()
-        for dir_from, dir_to in self.rotate_to.items():
-            key_from = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_from])%4
-            key_to = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_to])%4
-            rotate_t[self.directions[key_from]] = self.directions[key_to]
-        return rotate_t
+    def get_rotate_to( self, come_from ):
+        key_from = (self.directions_rev[come_from] - self.directions_rev[self.facing]) % 4
+        rel_dir_from = self.rel_directions[key_from]
+        if rel_dir_from in list(self.rotate_to):
+            angle_hor, angle_ver = self.rotate_to[rel_dir_from]
+            if angle_hor != 'None':
+                angle_hor *= pi/2
+            if angle_ver != 'None':
+                angle_ver *= pi/2
+            return [angle_hor, angle_ver]
+        else:
+            return ['None', 'None']
 
-    def rotate( self, come_from ):
+    def get_rotate_by( self, come_from ):
         key_from = (self.directions_rev[come_from] - self.directions_rev[self.facing]) % 4
         rel_dir_from = self.rel_directions[key_from]
         if rel_dir_from in list(self.rotate_by):
-            angle = self.rotate_by[rel_dir_from]
-            return [angle * pi / 2, 0]
+            angle_hor, angle_ver = self.rotate_by[rel_dir_from]
+            return [angle_hor, angle_ver]
         else:
             return [0, 0]
-
-    def get_ramp_up( self ):
-        ramp_u = dict()
-        for dir_from, dir_to in self.ramp_up.items():
-            key_from = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_from])%4
-            key_to = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_to])%4
-            ramp_u[self.directions[key_from]] = self.directions[key_to]
-        return ramp_u
-    def get_ramp_down( self ):
-        ramp_d = dict()
-        for dir_from, dir_to in self.ramp_down.items():
-            key_from = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_from])%4
-            key_to = (self.directions_rev[self.facing] + self.rel_directions_rev[dir_to])%4
-            ramp_d[self.directions[key_from]] = self.directions[key_to]
-        return ramp_d
+    def get_required_tiles( self ):
+        return self.required_tiles
     def get_texture_scale( self ):
         return self.texture_scale
     def get_texture_displacement( self ):
@@ -116,26 +110,15 @@ class Rail(Construction):
         self.name = input["constr_name"]
         self.facing = input["constr_facing"]
         self.come_from = self.constr_pack[self.type + " types"][ self.name ]["come_from"]
-        self.rotate_by = self.constr_pack[self.type + " types"][self.name ]["rotate_by"]
-        self.ramp_up = self.constr_pack[self.type + " types"][self.name ]["ramp_up"]
-        self.ramp_down = self.constr_pack[self.type + " types"][self.name ]["ramp_down"]
-        self.texture_scale = self.constr_pack[self.type + " types"][self.name ]["texture_scale"]
-        self.texture_displacement = self.constr_pack[self.type + " types"][self.name ]["texture_displacement"]
-        self.layer_displacement = self.constr_pack[self.type + " types"][self.name ]["layer_displacement"]
+        self.rotate_by = self.constr_pack[self.type + " types"][ self.name ]["rotate_by"]
+        self.rotate_to = self.constr_pack[self.type + " types"][ self.name ]["rotate_to"]
+        self.required_tiles = self.constr_pack[self.type + " types"][ self.name ]["required_tiles"]
+        self.texture_scale = self.constr_pack[self.type + " types"][ self.name ]["texture_scale"]
+        self.texture_displacement = self.constr_pack[self.type + " types"][ self.name ]["texture_displacement"]
+        self.layer_displacement = self.constr_pack[self.type + " types"][ self.name ]["layer_displacement"]
     def input_json( self, json_txt ):
         input = loads(json_txt)
         self.input_dict(input)
-        '''
-        self.name = input["constr_name"]
-        self.facing = input["constr_facing"]
-        self.come_from = self.constr_pack[self.type + " types"][self.name ]["come_from"]
-        self.rotate_by = self.constr_pack[self.type + " types"][self.name ]["rotate_by"]
-        self.ramp_up = self.constr_pack[self.type + " types"][self.name ]["ramp_up"]
-        self.ramp_down = self.constr_pack[self.type + " types"][self.name ]["ramp_down"]
-        self.texture_scale = self.constr_pack[self.type + " types"][self.name ]["texture_scale"]
-        self.texture_displacement = self.constr_pack[self.type + " types"][self.name ]["texture_displacement"]
-        self.layer_displacement = self.constr_pack[self.type + " types"][self.name ]["layer_displacement"]
-        '''
 
 
 class Station(Rail):

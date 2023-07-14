@@ -64,11 +64,42 @@ class Map:
             self.map[pos] = [tile, None]
         else:
             self.map[pos][0] = tile 
-    def set_construction(self, pos, constr ):
+    def set_construction(self, pos, constr):
+        if not constr:
+            return False
+        x, y = pos.split(',')
+        x, y = int(x), int(y)
+        height = self.map[pos][0].get_height()
+        required_tiles_dict = constr.get_required_tiles()
+        facing = constr.get_facing()
+        if "NESW" in required_tiles_dict:
+            required_tiles = required_tiles_dict["NESW"]
+        else:
+            required_tiles = required_tiles_dict[facing]
+        for tile in required_tiles:
+            test_pos = str(x + tile[0])+","+str(y + tile[1])
+            if self.map[test_pos][0].get_height() != height:
+                return False
+            data = constr.output_json()
+            data["constr_name"] += "_nr"
+            if constr.get_name() in list(self.constr_pack["rail types"]):
+                nr_constr = Rail('','', self.constr_pack)
+            elif constr.get_name() in list(self.constr_pack["station types"]):
+                nr_constr = Station('','', self.constr_pack)
+            nr_constr.input_dict(data)
+
+            if test_pos not in list(self.map):
+                self.map[test_pos] = [None, nr_constr]
+            else:
+                self.map[test_pos][1] = nr_constr
+
+
+
         if pos not in list(self.map):
             self.map[pos] = [None, constr]
         else:
             self.map[pos][1] = constr
+        return True
 
     def generate_chunck( self, position ): 
         cs = self.chunck_size
@@ -100,9 +131,9 @@ class Map:
                 tile.input_dict(value)
                 if 'constr_name' in list(value):
                     if value["constr_type"] == "station":
-                        constr = Station('','', self.constr_pack)
+                        constr = Station('','', constr_pack)
                     else:
-                        constr = Rail('', '', self.constr_pack)
+                        constr = Rail('', '', constr_pack)
                     constr.input_dict(value)
                 else:
                     constr = None
