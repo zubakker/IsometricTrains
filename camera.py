@@ -55,7 +55,7 @@ class Camera:
     def get_position( self):
         return self.position
 
-    def render( self, map, trains_list ):
+    def render( self, map, trains_list, cart_pack ):
         if not self.bg_updated:
             self.render_bg( map )
 
@@ -76,26 +76,43 @@ class Camera:
                 x, y = cart.get_pos()
                 x -= 1
                 y += 1
+                angles_list = cart_pack["cart rotations"]
+                cart_angle = cart.get_rotation()
+                min_delta = abs(angles_list[0][0] - cart_angle[0]) + abs(angles_list[0][1] - cart_angle[1])
+                min_angle = angles_list[0]
+                for angle in angles_list:
+                    delta = abs(angle[0] - cart_angle[0]) + abs(angle[1] - cart_angle[1])
+                    if delta < min_delta:
+                        min_angle = angle
+                        min_delta = delta
+                angle = str(round(min_angle[0],3))+","+str(round(min_angle[1],3))
+
+                    
+
+
                 texture_displacement_dict = cart.get_texture_displacement()
-                status_direction = cart.get_status() + "NESW"
-                if status_direction in texture_displacement_dict:
-                    texture_displacement = texture_displacement_dict[status_direction]
+                if angle in texture_displacement_dict:
+                    texture_displacement = texture_displacement_dict[ angle ]
                 else:
-                    texture_displacement = texture_displacement_dict[ cart.get_facing() ]
+                    texture_displacement = texture_displacement_dict["ALL"]
                 k = x - cart.get_height() + texture_displacement[0] 
                 f = y + cart.get_height() + texture_displacement[1] 
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]
 
-                cart_img = self.texture_pack[ cart.get_name_facing() ] 
-                scale_dict = cart.get_texture_scale()
-                if status_direction in scale_dict.keys():
-                    scale = scale_dict[status_direction]
+                if cart.get_name()+"_"+angle not in list(self.texture_pack):
+                    cart_img = self.texture_pack[ "error" ]
                 else:
-                    scale = scale_dict[ cart.get_facing() ]
-                size_x = DEFAULT_TILE_SIZE[0] * self.zoom
-                size_y = DEFAULT_TILE_SIZE[1] * self.zoom*2
+                    cart_img = self.texture_pack[ cart.get_name()+"_"+angle ] 
+                scale_dict = cart.get_texture_scale()
+                if angle in scale_dict.keys():
+                    scale = scale_dict[ angle ]
+                    print(scale)
+                else:
+                    scale = scale_dict["ALL"]
+                size_x = DEFAULT_TILE_SIZE[0] * self.zoom * scale[0]
+                size_y = DEFAULT_TILE_SIZE[1] * self.zoom*2 * scale[1]
                 cart_height = cart.get_height()
                 cart_img_scaled = pygame.transform.scale( cart_img, (size_x, size_y) )
                 pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom

@@ -63,10 +63,10 @@ class Cart:
         self.texture_displacement = cart_pack[ "cart types" ][ name ][ "texture_displacement" ]
         
         self.rotation = [{ 
-                "E": 0,
-                "N": 1,
-                "W": 2,
-                "S": 3
+                "N": 0,
+                "E": 1,
+                "S": 2,
+                "W": 3
                 }[self.facing] * pi / 2, 0]
 
 
@@ -118,6 +118,8 @@ class Cart:
         self.stopped = value
     def get_energy( self ):
         return self.speed * self.mass
+    def get_rotation( self):
+        return [self.rotation[0]*2/pi, self.rotation[1]*2/pi]
     
     def get_active_friction( self ):
         if self.stopped:
@@ -158,18 +160,12 @@ class Cart:
                             "E": "W",
                             "W": "E"
                         }
-        facing_by_angle = "ENWS"
+        facing_by_angle = "NESW"
         self.rotating = False
         self.ramping_up = False
         self.ramping_down = False
         x, y = self.position
-
-        x += cos(self.rotation[0]) * self.speed
-        y += sin(self.rotation[0]) * self.speed
-        self.height += sin(self.rotation[1]) * self.speed
-
         tile, constr = map[ str(round(x)) + "," + str(round(y)) ]
-
         if not constr:
             # either goes off the rail or stops completely
             # TEMP does nothing
@@ -185,6 +181,12 @@ class Cart:
             # TEMP does nothing
             self.stopped = True
             return True
+
+        x -= sin(self.rotation[0]) * self.speed
+        y += cos(self.rotation[0]) * self.speed
+        self.height += sin(self.rotation[1]) * self.speed
+
+
         neg_facing = negative_dict[self.facing]
         rel_rotation = constr.get_rotate_by( neg_facing )
         if rel_rotation[0] != 0:
@@ -209,9 +211,9 @@ class Cart:
             self.rotation[0] = angle*pi / 2
             self.facing = facing_by_angle[angle]
 
-            if -abs(self.speed) <= cos(self.rotation[0]) <= abs(self.speed):
-                x = round(x)
             if -abs(self.speed) <= sin(self.rotation[0]) <= abs(self.speed):
+                x = round(x)
+            if -abs(self.speed) <= cos(self.rotation[0]) <= abs(self.speed):
                 y = round(y)
 
         self.position[0] = x

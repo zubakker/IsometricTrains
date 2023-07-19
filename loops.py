@@ -116,7 +116,7 @@ def main_loop( cam, map, screen, trains_list, constr_pack, cart_pack ):
 
         screen.fill( (0, 0, 0) )
         a = time.time()
-        cam.render( map, trains_list )
+        cam.render( map, trains_list, cart_pack )
         render_buttons( cam, screen, selected_constr, constr_pack, cart_pack, facing )
         pygame.display.update()
         time.sleep( 0.01 )
@@ -127,7 +127,7 @@ def render_buttons( cam, screen, selected_constr, constr_pack, cart_pack, facing
     dx *= 0.6
     dy *= 0.6
     j = 0
-    rail_types = list(constr_pack["rail types"]) + list(cart_pack["cart types"]) + list(constr_pack["station types"])
+    rail_types = list(constr_pack["rail types"]) + list(constr_pack["station types"])
     for rail_type in rail_types:
         texture = cam.get_texture( rail_type + "_" + facing_list[facing] )
         if rail_types[selected_constr - 1] == rail_type:
