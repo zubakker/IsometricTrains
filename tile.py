@@ -13,11 +13,14 @@ class Tile:
     constructions: list
 
     def __init__( self, name, height ):
-        self.name = name
+        self.name = name + str(height%5)
+        self.type = name
         self.height = height
 
     def get_name( self ):
         return self.name
+    def get_type(self):
+        return self.type
     def get_height( self ):
         return self.height
     def change_height( self, change ):
@@ -28,15 +31,18 @@ class Tile:
     def output_json(self):
         output = {
                 "tile_name": self.name,
+                "tile_type": self.type,
                 "tile_height":   self.height
                 }
         return output
     def input_json(self, json_txt):
         input = loads(json_txt)
         self.name = input["tile_name"]
+        self.type = input["tile_type"]
         self.height = input["tile_height"]
     def input_dict(self, input):
         self.name = input["tile_name"]
+        self.type = input["tile_type"]
         self.height = input["tile_height"]
 
 

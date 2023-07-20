@@ -66,7 +66,7 @@ class Cart:
                 "N": 0,
                 "E": 1,
                 "S": 2,
-                "W": 3
+                "W": -1
                 }[self.facing] * pi / 2, 0]
 
 
@@ -166,6 +166,8 @@ class Cart:
         self.ramping_down = False
         x, y = self.position
         tile, constr = map[ str(round(x)) + "," + str(round(y)) ]
+
+
         if not constr:
             # either goes off the rail or stops completely
             # TEMP does nothing
@@ -181,11 +183,9 @@ class Cart:
             # TEMP does nothing
             self.stopped = True
             return True
-
         x -= sin(self.rotation[0]) * self.speed
         y += cos(self.rotation[0]) * self.speed
         self.height += sin(self.rotation[1]) * self.speed
-
 
         neg_facing = negative_dict[self.facing]
         rel_rotation = constr.get_rotate_by( neg_facing )

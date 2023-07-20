@@ -1,0 +1,41 @@
+{
+    "": {
+	"texture_name": "root",
+	"texture_scale": [1,1],
+	"buttons": {
+	    "rail": {
+		"texture_name": "default_rail_button",
+		"texture_scale": [1,1],
+		"buttons": {}	
+	    },
+	    "terrain": {
+		"texture_name": "default_terrain_button",
+		"texture_scale": [1,1],
+		"buttons": {
+		    "terrain up": {
+			"texture_name": "default_terrain_up_button",
+			"texture_scale": [1,1]
+		    },
+		    "terrain down": {
+			"texture_name": "default_terrain_down_button",
+			"texture_scale": [1,1]
+		    }
+		}
+	    },
+	    "train": {
+		"texture_name": "default_train_button",
+		"texture_scale": [1,1],
+		"buttons": {
+		    "new train": {
+			"texture_name": "default_new_train_button",
+			"texture_scale": [1,1]
+		    }
+		}
+	    }
+	},
+	"back": {
+	    "texture_name": "default_back_button",
+	    "texture_scale": [1,1]
+	}
+    }
+}

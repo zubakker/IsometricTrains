@@ -1,12 +1,12 @@
 import os 
 import pygame
 
-from math import floor
+from math import floor, ceil, log
 
 
 from tile import Tile, Map
 
-from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH, DEFAULT_TILE_SIZE
+from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH, DEFAULT_TILE_SIZE, MINIMAL_TILE_SIZE
 
 
 class Camera:
@@ -35,23 +35,51 @@ class Camera:
                 DEFAULT_SAVE_PATH, constr_pack, cart_pack )
 
 
-    def load_texture_pack( self, name ):
+    def get_tile_list( self ):
+        name = self.name
         tile_name  = "texture_packs/tiles/" + name
-        const_name = "texture_packs/constructions/" + name
+        return [x[:-4] for x in os.listdir(tile_name)]
+
+
+    def load_texture_pack( self, name ):
+        zoom_steps = ceil(log(DEFAULT_TILE_SIZE[0] / MINIMAL_TILE_SIZE[0], 2))
+        self.name = name
+        for step in range(zoom_steps+1):
+            self.texture_pack[ 2**step ] = dict()
+        
+        tile_name  = "texture_packs/tiles/" + name
+        constr_name = "texture_packs/constructions/" + name
         cart_name  = "texture_packs/carts/" + name
+        button_name  = "texture_packs/buttons/" + name
         tile_textures = os.listdir( tile_name )
-        const_textures = os.listdir( const_name )
+        constr_textures = os.listdir( constr_name )
         cart_textures = os.listdir( cart_name )
-        for texture in tile_textures:
-            self.texture_pack[ texture[:-4] ] = pygame.image.load(tile_name  +"/"+ texture)
-        for texture in const_textures:
-            self.texture_pack[ texture[:-4] ] = pygame.image.load(const_name +"/"+ texture)
-        for texture in cart_textures:
-            self.texture_pack[ texture[:-4] ] = pygame.image.load(cart_name  +"/"+ texture)
-    def get_texture( self, name ):
-        if name not in list(self.texture_pack):
-            return None 
-        return self.texture_pack[name]
+        button_textures = os.listdir( button_name )
+        texture_dirs = { 
+                    tile_name:  tile_textures,
+                    constr_name:    constr_textures,
+                    cart_name:  cart_textures,
+                    button_name:    button_textures
+                }
+        for dir, textures in texture_dirs.items():
+            for texture in textures:
+                self.texture_pack[1][ texture[:-4] ] = pygame.image.load(dir  +"/"+ texture)
+
+        for key, image in self.texture_pack[1].items():
+            for step in range(1, zoom_steps+1):
+                size_x = DEFAULT_TILE_SIZE[0] // 2**(step-1)
+                size_y = DEFAULT_TILE_SIZE[1] // 2**(step-1)
+                scaled_img = pygame.transform.scale( image, (size_x, size_y) )
+                self.texture_pack[ 2**step ][key] = scaled_img
+    def get_texture( self, name, ignore_zoom=False):
+        zoom_step = -floor(log(self.zoom, 2))
+        if ignore_zoom:
+            zoom_step = 0
+        if name not in list(self.texture_pack[2**zoom_step]):
+            print('Texture not found:', name)
+            return self.texture_pack[2**zoom_step]['error']
+
+        return self.texture_pack[2**zoom_step][name]
     def get_position( self):
         return self.position
 
@@ -100,15 +128,10 @@ class Camera:
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]
-
-                if cart.get_name()+"_"+angle not in list(self.texture_pack):
-                    cart_img = self.texture_pack[ "error" ]
-                else:
-                    cart_img = self.texture_pack[ cart.get_name()+"_"+angle ] 
+                cart_img = self.get_texture(cart.get_name()+"_"+angle)
                 scale_dict = cart.get_texture_scale()
                 if angle in scale_dict.keys():
                     scale = scale_dict[ angle ]
-                    print(scale)
                 else:
                     scale = scale_dict["ALL"]
                 size_x = DEFAULT_TILE_SIZE[0] * self.zoom * scale[0]
@@ -151,10 +174,10 @@ class Camera:
         height = tile.get_height()
         height_e = tile_e.get_height()
         height_s = tile_s.get_height()
-        tile_img = self.texture_pack[ tile.get_name() + str(height%5) ] 
+        tile_img = self.get_texture(tile.get_name())
         if height > self.cam_height:
             height = self.cam_height
-            tile_img = self.texture_pack[ tile.get_name() + "_black" ] 
+            tile_img = self.get_texture(tile.get_type()+"_black_nb") # TEMP
         if height_e > self.cam_height:
             height_e = self.cam_height
         if height_s > self.cam_height:
@@ -173,8 +196,8 @@ class Camera:
         if height_s < height and height_e < height:
             # render tile and walls 
             wall_height = height - max(height_e, height_s)
-            bg_height = self.texture_pack[ "default_bg_height" ]
-            bg_wall = self.texture_pack[ "default_bg_wall" ]
+            bg_height = self.get_texture("default_bg_height_nb") # TEMP
+            bg_wall = self.get_texture("default_bg_wall_nb") # TEMP
             bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
             bg_height_scaled = pygame.transform.scale( bg_height, 
                     (size_x, size_y*(wall_height-0.5)))
@@ -191,8 +214,8 @@ class Camera:
             height -= wall_height
         if height_e < height:
             # render tile and right wall
-            bg_height = self.texture_pack[ "default_bg_height_right" ]
-            bg_wall = self.texture_pack[ "default_bg_wall_right" ]
+            bg_height = self.get_texture("default_bg_height_right_nb") # TEMP
+            bg_wall = self.get_texture("default_bg_wall_right_nb") # TEMP
             bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
             bg_height_scaled = pygame.transform.scale( bg_height, 
                     (size_x, size_y*(height-0.5)))
@@ -208,8 +231,8 @@ class Camera:
                             )
         elif height_s < height:
             # render tile and left wall
-            bg_height = self.texture_pack[ "default_bg_height_left" ]
-            bg_wall = self.texture_pack[ "default_bg_wall_left" ]
+            bg_height = self.get_texture("default_bg_height_left_nb") # TEMP
+            bg_wall = self.get_texture("default_bg_wall_left_nb") # TEMP
             bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
             bg_height_scaled = pygame.transform.scale( bg_height, 
                     (size_x, size_y*(height-0.5)))
@@ -245,7 +268,7 @@ class Camera:
                      f - self.position[1] + k/2 -3*f/2 - 0.5 ]
         pos_x = (position[0]/2) * DEFAULT_TILE_SIZE[0] * self.zoom
         pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
-        const_img = self.texture_pack[ const.get_name_facing() ] 
+        const_img = self.get_texture(const.get_name_facing())
         scale_dict = const.get_texture_scale()
         if "NESW" in scale_dict.keys():
             scale = scale_dict["NESW"]
@@ -285,10 +308,10 @@ class Camera:
                 # === rendering tiles ===
                 tile = map[ str(j)+","+str(i) ][0]
                 height = tile.get_height()
-                tile_img = self.texture_pack[ tile.get_name() + str(height%5) ] 
+                tile_img = self.get_texture(tile.get_name())
                 if height > self.cam_height:
                     height = self.cam_height
-                    tile_img = self.texture_pack[ tile.get_name() + "_black" ] 
+                    tile_img = self.get_texture(tile.get_type() + "_black_nb") # TEMP
                 f = i + height
                 k = j - height
                 # converting isometric coords into coords on screen
@@ -301,8 +324,8 @@ class Camera:
                 pos_y = position[1] * DEFAULT_TILE_SIZE[1] * self.zoom
 
                 if height:
-                    bg_height = self.texture_pack[ "default_bg_height" ]
-                    bg_wall = self.texture_pack[ "default_bg_wall" ]
+                    bg_height = self.get_texture("default_bg_height_nb") # TEMP
+                    bg_wall = self.get_texture("default_bg_wall_nb") # TEMP
                     bg_wall_scaled = pygame.transform.scale( bg_wall, (size_x, 2*size_y))
                     bg_height_scaled = pygame.transform.scale( bg_height, 
                             (size_x, size_y*(height-1)*1.5))
@@ -344,7 +367,7 @@ class Camera:
                 # converting isometric coords into coords on screen
                 position = [ k - self.position[0]*2 + f - 1,
                              f - self.position[1] + k/2 -3*f/2 - 0.5 ]
-                const_img = self.texture_pack[ const.get_name_facing() ] 
+                const_img = self.get_texture(const.get_name_facing())
                 scale_dict = const.get_texture_scale()
                 if "NESW" in scale_dict.keys():
                     scale = scale_dict["NESW"]
@@ -390,8 +413,8 @@ class Camera:
 
 
     def move( self, rel_pos ):
-        self.position[0] += rel_pos[0]*self.zoom
-        self.position[1] += rel_pos[1]*self.zoom
+        self.position[0] += rel_pos[0]/self.zoom
+        self.position[1] += rel_pos[1]/self.zoom
     def move_vert( self, rel_pos, map):
         if not self.cam_height and self.cam_height != 0:
             self.cam_height = 10 # TEMP
@@ -401,6 +424,10 @@ class Camera:
     def zoom_in( self, amount ):
         if amount > 0:
             self.zoom *= 1.2
+            if self.zoom > 1:
+                self.zoom = 1
         if amount < 0:
             self.zoom /= 1.2
+            if self.zoom < 1/ max(list(self.texture_pack)):
+                self.zoom = 1/ max(list(self.texture_pack))
         self.bg_updated = False
