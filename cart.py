@@ -53,6 +53,7 @@ class Cart:
         self.speed = 0.1 # TEMP
 
         self.stopped = False
+        self.stopping = False
         if self.name == '':
             return
 
@@ -119,12 +120,21 @@ class Cart:
     def get_energy( self ):
         return self.speed * self.mass
     def get_rotation( self):
-        return [self.rotation[0]*2/pi, self.rotation[1]*2/pi]
+        return [self.rotation[0], self.rotation[1]]
+    def set_stopping(self, value):
+        if value == "Toggle":
+            self.stopping = not self.stopping
+            self.stopped = False
+            return
+        self.stopping = value
     
     def get_active_friction( self ):
         if self.stopped:
             return 0
         return self.mass * self.friction * self.speed
+
+    def get_tile(self):
+        return str(round(self.position[0]))+","+str(round(self.position[1]))
 
     def output_json(self):
         output = {
@@ -160,7 +170,7 @@ class Cart:
                             "E": "W",
                             "W": "E"
                         }
-        facing_by_angle = "NESW"
+        facing_by_angle = "NWSE"
         self.rotating = False
         self.ramping_up = False
         self.ramping_down = False
@@ -183,9 +193,15 @@ class Cart:
             # TEMP does nothing
             self.stopped = True
             return True
-        x -= sin(self.rotation[0]) * self.speed
-        y += cos(self.rotation[0]) * self.speed
+        x -= sin(pi*self.rotation[0]/2) * self.speed 
+        y += cos(pi*self.rotation[0]/2) * self.speed 
         self.height += sin(self.rotation[1]) * self.speed
+        if self.stopping and abs(round(x) - x) < self.speed and \
+                abs(round(y) - y) < self.speed:
+            # either goes off the rail or stops completely
+            # TEMP does nothing
+            self.stopped = True
+            return True
 
         neg_facing = negative_dict[self.facing]
         rel_rotation = constr.get_rotate_by( neg_facing )
@@ -196,9 +212,18 @@ class Cart:
         if self.rotation[1] < 0:
             self.ramping_down = True
 
+        if -abs(self.speed) <= sin(pi*self.rotation[0]/2) <= abs(self.speed) or \
+                -abs(self.speed) <= cos(pi*self.rotation[0]/2) <= abs(self.speed):
+            angle = round(self.rotation[0]) % 4
+            self.rotation[0] = angle
+            if self.rotation[0] > 2:
+                self.rotation[0] -= 4
 
-        self.rotation[0] += rel_rotation[0] * self.speed
-        self.rotation[1] += rel_rotation[1] * self.speed
+            self.facing = facing_by_angle[angle]
+
+
+        self.rotation[0] += 2*rel_rotation[0] * self.speed/ pi
+        self.rotation[1] += 2*rel_rotation[1] * self.speed/ pi
 
         rotation = constr.get_rotate_to( neg_facing )
         if rotation[0] != 'None':
@@ -206,14 +231,17 @@ class Cart:
         if rotation[1] != 'None':
             self.rotation[1] = rotation[1]
 
-        if not self.rotating:
-            angle = round(2*self.rotation[0]/pi) % 4
-            self.rotation[0] = angle*pi / 2
-            self.facing = facing_by_angle[angle]
 
-            if -abs(self.speed) <= sin(self.rotation[0]) <= abs(self.speed):
+        if not self.rotating:
+            angle = round(self.rotation[0]) % 4
+            self.rotation[0] = angle
+            self.facing = facing_by_angle[angle]
+            if self.rotation[0] > 2:
+                self.rotation[0] -= 4
+
+            if -abs(self.speed) <= sin(pi*self.rotation[0]/2) <= abs(self.speed):
                 x = round(x)
-            if -abs(self.speed) <= cos(self.rotation[0]) <= abs(self.speed):
+            if -abs(self.speed) <= cos(pi*self.rotation[0]/2) <= abs(self.speed):
                 y = round(y)
 
         self.position[0] = x
@@ -228,7 +256,8 @@ class Cart:
 class Train(Cart):
     carts: list[ Cart ]
     def __init__( self, cart_pack, carts_list, ):
-        self.stopped = False
+        self.stopped = False 
+        self.stopping = False 
         self.carts = carts_list
         self.cart_pack = cart_pack
 
@@ -236,6 +265,12 @@ class Train(Cart):
         return self.carts
     def add_cart( self, cart ):
         self.carts.append(cart)
+
+    def get_pos_list(self):
+        pos_list = list()
+        for cart in self.carts:
+            pos_list.append(cart.get_tile())
+        return pos_list
 
     def update(self, map):
         self.stopped = False
@@ -252,6 +287,8 @@ class Train(Cart):
             cart.set_speed(self.speed)
             if self.stopped:
                 cart.set_stopped( True )
+            if self.stopping:
+                cart.set_stopping(self.stopping)
             if cart.update(map):
                 self.stopped = True
         if self.stopped:
@@ -262,6 +299,14 @@ class Train(Cart):
         return self.stopped
     def set_stopped(self, value):
         self.stopped = value
+    def set_stopping(self, value):
+        if value == "Toggle":
+            self.stopping = not self.stopping
+            self.stopped = False
+            for cart in self.carts:
+                cart.set_stopping("Toggle")
+            return
+        self.stopping = value
 
     def output_json(self):
         output = list()

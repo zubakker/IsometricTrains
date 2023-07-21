@@ -10,14 +10,16 @@ from cart import Cart
 
 from cart import load_trains_list, save_trains_list
 
-from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH, DEFAULT_TILE_SIZE, DEFAULT_BUTTON_SIZE
+from constants import SCREEN_SIZE, DEFAULT_SAVE_PATH, DEFAULT_TILE_SIZE, \
+    DEFAULT_BUTTON_SIZE, DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, DEFAULT_TEXT_COLOR
 
 def load_button_pack( name ):
     inp = open("button_packs/" + name + ".json", "r").read()
     button_pack = loads(inp)
     return button_pack
 
-def get_buttons( path, constr_pack, cart_pack, button_pack, tile_list, facing ):
+def get_buttons( path, constr_pack, cart_pack, button_pack,
+        tile_list, trains_list, facing ):
     facing_list = "NESW"
     angle_list = [ 
             "0.0",
@@ -28,7 +30,10 @@ def get_buttons( path, constr_pack, cart_pack, button_pack, tile_list, facing ):
     sep_path = path.split("/")
     stage = button_pack
     for menu in sep_path:
-        stage = stage[menu]["buttons"]
+        if menu.startswith("Train"):
+            stage = stage["train"]["buttons"]
+        else:
+            stage = stage[menu]["buttons"]
     if path:
         stage["back"] = button_pack[""]["back"]
 
@@ -51,6 +56,13 @@ def get_buttons( path, constr_pack, cart_pack, button_pack, tile_list, facing ):
                     "texture_scale": [1, 0.5]
             }
     if menu == "train":
+        for i, train in enumerate(trains_list):
+            stage["Train " + str(i)] = {
+                    "texture_name": "default_engine_0.0,0.0", # TEMP
+                    "texture_scale": [1, 1.18],
+                    "text": "Train " + str(i)
+            }
+    if menu.startswith("Train"):
         for cart_type in list(cart_pack["cart types"]):
             if cart_type.endswith("_nr") or cart_type.endswith("_nb"):
                 continue
@@ -58,13 +70,13 @@ def get_buttons( path, constr_pack, cart_pack, button_pack, tile_list, facing ):
                     "texture_name": cart_type+"_"+angle_list[facing]+",0.0",
                     "texture_scale": [1, 1.18]
             }
-            ...
     # :TEMP ends
     return stage
 
 def enter_submenu( selected_button, path,
-        constr_pack, cart_pack, button_pack, tile_list, facing ):
-    buttons = get_buttons(path, constr_pack, cart_pack, button_pack, tile_list, facing)
+        constr_pack, cart_pack, button_pack, tile_list,trains_list, facing ):
+    buttons = get_buttons(path, constr_pack, cart_pack, button_pack, 
+            tile_list, trains_list, facing)
     if selected_button > len(list(buttons)):
         return path, None
     if list(buttons)[selected_button-1] == "back":
@@ -72,7 +84,8 @@ def enter_submenu( selected_button, path,
         return path, None
     else:
         menu = list(buttons)[selected_button-1]
-        if "buttons" not in buttons[menu]:
+        print(buttons)
+        if "buttons" not in buttons[menu] and not menu.startswith("Train"):
             return path, menu
     return path + "/" + menu, None
 
@@ -88,6 +101,8 @@ def main_loop( cam, map, screen, trains_list, button_path,
     rail_types = list(constr_pack["rail types"]) # DEL 
     station_types = list(constr_pack["station types"]) # DEL 
     cart_types = list(cart_pack["cart types"]) # DEL 
+    pygame.font.init()
+    font = pygame.font.SysFont(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE)
 
     while True:
         keys = pygame.key.get_pressed()
@@ -98,7 +113,21 @@ def main_loop( cam, map, screen, trains_list, button_path,
                     pos = cam.get_tile( mouse_pos, map )
 
                     if not selected_build:
+                        for train in trains_list:
+                            pos_list = train.get_pos_list()
+                            for cart_pos in pos_list:
+                                if cart_pos == pos:
+                                    train.set_stopping("Toggle")
+                                    break
                         continue
+                    if selected_build == "delete cart":
+                        train = ...
+                        pos_list = train.get_pos_list()
+                        for cart_pos in pos_list:
+                            if cart_pos == pos:
+                                # train.delete_cart() # TODO
+                                break
+
 
                     if "rail" in selected_build:
                         const = Rail( selected_build, 
@@ -114,23 +143,18 @@ def main_loop( cam, map, screen, trains_list, button_path,
                         map[ pos ][0].change_name( selected_build )
                         cam.render_bg( map )
                     if "cart" in selected_build:
+                        train = ... # TODO
                         list_pos = [int(x) for x in pos.split(",")]
                         height = map[ pos ][0].get_height()
                         cart = Cart( cart_pack, selected_build, 
                                      facing_list[facing], list_pos, height )
-                        trains_list[0].add_cart(cart) # TEMP
-                        '''
-                    else:
+                        trains_list[i].add_cart(cart) # TODO
+                    if selected_build == "terrain up":
                         map[ pos ][0].change_height(1)
-                        map[ pos ][0].change_name( selected_tile )
                         cam.render_bg( map )
-                        '''
-                if event.button == 3: # right
-                    mouse_pos = pygame.mouse.get_pos()
-                    pos = cam.get_tile( mouse_pos, map )
-                    map[ pos ][0].change_height(-1)
-                    map[ pos ][0].change_name( selected_tile )
-                    cam.render_bg( map )
+                    if selected_build == "terrain down":
+                        map[ pos ][0].change_height(-1)
+                        cam.render_bg( map )
                         
                 if event.button == 4: # scroll up
                     if keys[ pygame.K_LSHIFT ]:
@@ -150,7 +174,7 @@ def main_loop( cam, map, screen, trains_list, button_path,
                         selected_button = i+1
                         button_path, selected_build = enter_submenu(selected_button, 
                                 button_path, constr_pack, cart_pack, 
-                                button_pack, tile_list, facing)
+                                button_pack, tile_list, trains_list, facing)
                         if not selected_build:
                             selected_button = 0
 
@@ -198,12 +222,12 @@ def main_loop( cam, map, screen, trains_list, button_path,
         a = time.time()
         cam.render( map, trains_list, cart_pack )
         render_buttons( cam, screen, selected_button, button_path,
-                constr_pack, cart_pack, button_pack, facing )
+                constr_pack, cart_pack, button_pack, trains_list, facing, font )
         pygame.display.update()
         time.sleep( 0.01 )
 
 def render_buttons( cam, screen, selected_button, button_path,
-        constr_pack, cart_pack, button_pack, facing ):
+        constr_pack, cart_pack, button_pack, trains_list, facing, font ):
     dx, dy = DEFAULT_BUTTON_SIZE
     dx *= 0.6
     dy *= 0.6
@@ -212,9 +236,13 @@ def render_buttons( cam, screen, selected_button, button_path,
     tile_list = cam.get_tile_list()
 
     for name, button in get_buttons(button_path, constr_pack, 
-            cart_pack, button_pack, tile_list, facing).items():
+            cart_pack, button_pack, tile_list, trains_list, facing).items():
         i += 1
-        texture = cam.get_texture( button["texture_name"], ignore_zoom=True )
+        texture = pygame.Surface.copy(cam.get_texture( button["texture_name"], ignore_zoom=True ))
+        if "text" in list(button):
+            text = font.render(button["text"], True, DEFAULT_TEXT_COLOR)
+            texture.blit(text, (0, 0))
+            
         if selected_button == i:
             scale_x = dx * button["texture_scale"][0]
             scale_y = dy * button["texture_scale"][1]

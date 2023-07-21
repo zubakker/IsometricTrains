@@ -114,7 +114,6 @@ class Camera:
                         min_angle = angle
                         min_delta = delta
                 angle = str(round(min_angle[0],3))+","+str(round(min_angle[1],3))
-
                     
 
 
