@@ -1,8 +1,9 @@
 from json import dumps, loads
+from random import randint
 
 from perlin_numpy import generate_perlin_noise_2d
 
-from construction import Rail, Station
+from construction import Rail, Station, Factory
 
 from constants import CHUNCK_SIZE, DEFAULT_SAVE_PATH
 
@@ -55,6 +56,7 @@ class Map:
         self.chunck_size = CHUNCK_SIZE
         self.constr_pack = constr_pack
         self.cart_pack = cart_pack
+        self.factory_list = list()
 
     def __getitem__( self, name ):
         if name not in list(self.map):
@@ -107,7 +109,7 @@ class Map:
             self.map[pos][1] = constr
         return True
 
-    def generate_chunck( self, position ): 
+    def generate_chunck( self, position, constr_pack ): 
         cs = self.chunck_size
         chunck_center = [0, 0] 
         chunck_center[0] = (position[0] + cs//2) // cs
@@ -118,11 +120,23 @@ class Map:
             for j in range(-cs//2, cs//2 + 1):
                 # generating noise-based chunck
                 height = abs(noise[i, j]*5)
-                # height = 0 # TEMP
                 tile = Tile( "default_basic_tile", int(height) )
                 self.map[ str(chunck_center[0]*cs + i) + "," 
                         + str(chunck_center[1]*cs + j) ] = [tile , None]
-        ...
+        # TEMP starts:
+        factory_x = randint(-cs//2, cs//2)
+        factory_y = randint(-cs//2, cs//2)
+        factory = Factory("default_factory", "N", constr_pack)
+        self.map[ str(chunck_center[0]*cs + factory_x) + ","
+                  + str(chunck_center[1]*cs + factory_y)][1] = factory
+        mines_x = randint(-cs//2, cs//2)
+        mines_y = randint(-cs//2, cs//2)
+        mines = Factory("default_mines", "N", constr_pack)
+        self.map[ str(chunck_center[0]*cs + mines_x) + ","
+                  + str(chunck_center[1]*cs + mines_y)][1] = mines
+        self.factory_list.append(factory)
+        self.factory_list.append(mines)
+        # :TEMP ends
 
     def load_chunck( self, position, path, constr_pack, cart_pack ):
         cs = self.chunck_size
@@ -138,6 +152,9 @@ class Map:
                 if 'constr_name' in list(value):
                     if value["constr_type"] == "station":
                         constr = Station('','', constr_pack)
+                    if value["constr_type"] == "factory":
+                        constr = Factory('','', constr_pack)
+                        self.factory_list.append(constr)
                     else:
                         constr = Rail('', '', constr_pack)
                     constr.input_dict(value)
@@ -148,7 +165,7 @@ class Map:
                     
         except FileNotFoundError:
         # if chunck hasn't been saved (it wasn't generated)
-            self.generate_chunck( position )
+            self.generate_chunck( position, constr_pack )
     def save_chunck( self, position, path, trains_list ): # ...
         cs = self.chunck_size
         chunck_center = [0, 0] 
@@ -166,6 +183,6 @@ class Map:
         fout.write(dumps(data))
         fout.close()
 
-        ...
-    ...
-
+    def update_factories(self):
+        for factory in self.factory_list:
+            factory.update()

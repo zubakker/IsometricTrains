@@ -84,7 +84,6 @@ def enter_submenu( selected_button, path,
         return path, None
     else:
         menu = list(buttons)[selected_button-1]
-        print(buttons)
         if "buttons" not in buttons[menu] and not menu.startswith("Train"):
             return path, menu
     return path + "/" + menu, None
@@ -136,7 +135,7 @@ def main_loop( cam, map, screen, trains_list, button_path,
                         cam.render_bg( map )
                     if "station" in selected_build:
                         const = Station( selected_build, 
-                                    facing_list[facing], constr_pack )
+                                    facing_list[facing], constr_pack, map, pos )
                         map.set_construction( pos, const )
                         cam.render_bg( map )
                     if "tile" in selected_build:
@@ -217,6 +216,7 @@ def main_loop( cam, map, screen, trains_list, button_path,
 
         for train in trains_list:
             train.update( map )
+        map.update_factories()
 
         screen.fill( (0, 0, 0) )
         a = time.time()

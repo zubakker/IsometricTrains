@@ -162,6 +162,7 @@
     "station types": {
 	"default_station_one_platform_two_way":
 	    {
+		"inventory_space": 7,
 		"come_from": ["Front", "Back"],
 		"rotate_by": {},
 		"rotate_to": {},
@@ -180,5 +181,25 @@
 		    "W": [0, 1]
 		}
 	    }
+    },
+    "factory types": {
+	"default_factory": {
+	    "produced_item": "",
+	    "consumed_items": ["ore"],
+	    "updated_per_item": 30,
+	    "required_tiles": {"NESW": []},
+	    "texture_scale": {"NESW": [1,2]},
+	    "texture_displacement": {"NESW": [1,-1]},
+	    "layer_displacement": {"NESW": [0,0]}
+	},
+	"default_mines": {
+	    "produced_item": "ore",
+	    "consumed_items": [],
+	    "updated_per_item": 30,
+	    "required_tiles": {"NESW": []},
+	    "texture_scale": {"NESW": [1,2]},
+	    "texture_displacement": {"NESW": [1,-1]},
+	    "layer_displacement": {"NESW": [0,0]}
+	}
     }
 }

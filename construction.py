@@ -13,15 +13,18 @@ class Construction:
     name: str
     facing: str # N, E, W, S, NE, ...
 
-    def __init__( self, name, facing ):
+    def __init__( self, name, facing, type="construction" ):
         self.name = name
         self.facing = facing
+        self.type = type
     def get_name_facing( self ):
         return self.name + "_" + self.facing
     def get_name( self ):
         return self.name
     def get_facing(self):
         return self.facing
+    def get_type(self):
+        return self.type
     ...
 
 class Rail(Construction):
@@ -30,8 +33,7 @@ class Rail(Construction):
     texture_scale: [float, float]
     texture_displacement: [float, float]
 
-    def __init__( self, name, facing, constr_pack, type="rail" ):
-        self.type = type
+    def __init__( self, name, facing, constr_pack, c_type="rail" ):
         self.directions = "NESW"
         self.directions_rev = {
                 "N": 0,
@@ -46,7 +48,7 @@ class Rail(Construction):
                 "Back": 2,
                 "Left": 3
                 }
-        super().__init__( name, facing )
+        super().__init__( name, facing, type=c_type )
         if not name:
             self.constr_pack = constr_pack
             return 
@@ -59,9 +61,6 @@ class Rail(Construction):
         self.texture_scale = constr_pack[self.type + " types"][ name ]["texture_scale"]
         self.texture_displacement = constr_pack[self.type + " types"][ name ]["texture_displacement"]
         self.layer_displacement = constr_pack[self.type + " types"][ name ]["layer_displacement"]
-    def get_type(self):
-        return self.type
-
     def get_come_from( self ):
         come_fr = list()
         for dir in self.come_from:
@@ -122,13 +121,140 @@ class Rail(Construction):
 
 
 class Station(Rail):
-    def __init__( self, name, facing, constr_pack ):
-        super().__init__(name, facing, constr_pack, type="station")
-        self.status = "stopping"
+    def __init__(self, name, facing, constr_pack, map, pos):
+        super().__init__(name, facing, constr_pack, c_type="station")
+        self.status = "stopping" # TEMP
+        self.inventory_space = constr_pack[self.type + " types"][ self.name ]["inventory_space"]
+        self.inventory = list()
+        self.accepted_items = 'ANY' # TEMP
+        # check for adjustment factories
+        self.factories = list()
+        x, y = pos.split(",")
+        x, y = int(x), int(y)
+        for i in range(-2, 3):
+            for j in range(-2, 3):
+                constr = map[str(x+i) +','+ str(y+j)][1]
+                if not constr:
+                    continue
+                if constr.get_type() == "factory":
+                    self.factories.append(constr)
+                    constr.add_station(self)
 
     def get_status(self):
         return self.status
     def set_status(self, status):
         self.status = status
-    ...
-    
+
+    def get_name_facing(self):
+        if len(self.inventory) > 7: # TEMP
+            return self.name + "_" + self.facing + "_7" # TEMP
+        if not self.inventory:
+            return self.name + "_" + self.facing 
+        return self.name + "_" + self.facing + "_" + str(len(self.inventory))
+
+    def get_items(self):
+        return self.inventory[::]
+    def remove_item(self, item):
+        for i in range(len(self.inventory)):
+            if self.inventory[i] == item:
+                self.inventory.pop(i)
+                return True
+        return False
+    def add_item(self, item):
+        if (self.accepted_items == 'ANY' or item in self.accepted_items) and \
+                len(self.inventory) < self.inventory_space:
+            self.inventory.append(item)
+            return True
+        else:
+            return False
+    def accepts_item(self, item):
+        if not item:
+            return False
+        if self.accepted_items == 'ANY':
+            return True
+        elif item in self.accepted_items:
+            return True
+        return False
+
+
+class Factory(Construction):
+    def __init__(self, name, facing, constr_pack):
+        super().__init__(name, facing, constr_pack)
+        self.type = "factory"
+        if not name:
+            self.constr_pack = constr_pack
+            return 
+        self.produced_item = constr_pack[self.type + " types"][ name ]["produced_item"]
+        self.consumed_items = constr_pack[self.type + " types"][ name ]["consumed_items"]
+        self.updated_per_item = constr_pack[self.type + " types"][ name ]["updated_per_item"]
+        self.required_tiles = constr_pack[self.type + " types"][ self.name ]["required_tiles"]
+        self.texture_scale = constr_pack[self.type + " types"][ name ]["texture_scale"]
+        self.texture_displacement = constr_pack[self.type + " types"][ name ]["texture_displacement"]
+        self.texture_scale = constr_pack[self.type + " types"][ name ]["texture_scale"]
+        self.texture_displacement = constr_pack[self.type + " types"][ name ]["texture_displacement"]
+        self.layer_displacement = constr_pack[self.type + " types"][ name ]["layer_displacement"]
+        self.update_counter = 0
+        self.stations = list()
+
+    def add_station(self, station):
+        self.stations.append(station)
+    def get_required_tiles( self ):
+        return self.required_tiles
+    def get_texture_scale( self ):
+        return self.texture_scale
+    def get_texture_displacement( self ):
+        return self.texture_displacement
+    def get_layer_displacement( self ):
+        return self.layer_displacement
+
+    def update(self):
+        self.update_counter += 1
+        satisfied = True
+        if not self.update_counter == self.updated_per_item:
+            return
+        self.update_counter = 0
+        for item in self.consumed_items:
+            item_satisfied = False
+            for station in self.stations:
+                if item in station.get_items():
+                    item_satisfied = True
+            if not item_satisfied:
+                satisfied = False
+                break
+        if satisfied:
+            for item in self.consumed_items:
+                for station in self.stations:
+                    if item in station.get_items():
+                        station.remove_item(item)
+                        break
+            for station in self.stations:
+                if station.accepts_item(self.produced_item) and station.add_item(self.produced_item):
+                    break
+    def output_json( self ):
+        output = {
+                "constr_type": self.type,
+                "constr_name": self.name,
+                "constr_facing": self.facing,
+                "constr_upd_counter": self.update_counter
+                }
+        return output
+    def input_dict( self, input ):
+        self.type = input["constr_type"]
+        self.name = input["constr_name"]
+        self.facing = input["constr_facing"]
+        self.update_counter = input["constr_upd_counter"]
+        self.produced_item = self.constr_pack[self.type + " types"][ self.name ]["produced_item"]
+        self.consumed_items = self.constr_pack[self.type + " types"][ self.name ]["consumed_items"]
+        self.updated_per_item = self.constr_pack[self.type + " types"][ self.name ]["updated_per_item"]
+        self.required_tiles = self.constr_pack[self.type + " types"][ self.name ]["required_tiles"]
+        self.texture_scale = self.constr_pack[self.type + " types"][ self.name ]["texture_scale"]
+        self.texture_displacement = self.constr_pack[self.type + " types"][ self.name ]["texture_displacement"]
+        self.layer_displacement = self.constr_pack[self.type + " types"][ self.name ]["layer_displacement"]
+        self.stations = list()
+    def input_json( self, json_txt ):
+        input = loads(json_txt)
+        self.input_dict(input)
+
+
+
+
