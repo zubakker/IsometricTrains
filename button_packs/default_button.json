@@ -27,19 +27,20 @@
 		"texture_scale": [1,1],
 		"buttons": {
 		    "new train": {
-			"texture_name": "default_new_train_button",
-			"texture_scale": [1,1]
+			"texture_name": "default_train_new_button",
+			"texture_scale": [1,1],
+			"buttons": {}
 		    },
-		    "train": {
+		    "train number": {
 			"texture_name": "default_train_button",
 			"texture_scale": [1,1],
 			"buttons": {
 			    "delete train": {
-				"texture_name": "default_delete_train_button",
+				"texture_name": "default_train_delete_button",
 				"texture_scale": [1,1]
 			    },
-			    "delete cart": {
-				"texture_name": "default_delete_cart_button",
+			    "delete last cart": {
+				"texture_name": "default_train_delete_last_cart_button",
 				"texture_scale": [1,1]
 			    }
 			}

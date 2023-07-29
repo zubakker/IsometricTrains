@@ -261,10 +261,15 @@ class Train(Cart):
         self.carts = carts_list
         self.cart_pack = cart_pack
 
-    def get_carts( self ):
+    def get_carts(self):
         return self.carts
-    def add_cart( self, cart ):
+    def add_cart(self, cart):
         self.carts.append(cart)
+    def delete_cart(self, cart_num):
+        if cart_num >= len(self.carts) or len(self.carts) == 1:
+            return False
+        self.carts.pop(cart_num)
+        return True
 
     def get_pos_list(self):
         pos_list = list()

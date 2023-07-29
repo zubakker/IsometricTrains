@@ -6,7 +6,7 @@ from json import loads
 from camera import Camera
 from tile import Tile
 from construction import Rail, Station
-from cart import Cart
+from cart import Cart, Train
 
 from cart import load_trains_list, save_trains_list
 
@@ -28,14 +28,14 @@ def get_buttons( path, constr_pack, cart_pack, button_pack,
             "-1.0"
                 ]
     sep_path = path.split("/")
-    stage = button_pack
+    stage = button_pack.copy()
     for menu in sep_path:
         if menu.startswith("Train"):
-            stage = stage["train"]["buttons"]
+            stage = stage["train number"]["buttons"].copy()
         else:
-            stage = stage[menu]["buttons"]
+            stage = stage[menu]["buttons"].copy()
     if path:
-        stage["back"] = button_pack[""]["back"]
+        stage["back"] = button_pack[""]["back"].copy()
 
     # TEMP starts:
     if menu == "rail":
@@ -56,6 +56,7 @@ def get_buttons( path, constr_pack, cart_pack, button_pack,
                     "texture_scale": [1, 0.5]
             }
     if menu == "train":
+        stage.pop("train number")
         for i, train in enumerate(trains_list):
             stage["Train " + str(i)] = {
                     "texture_name": "default_engine_0.0,0.0", # TEMP
@@ -63,6 +64,14 @@ def get_buttons( path, constr_pack, cart_pack, button_pack,
                     "text": "Train " + str(i)
             }
     if menu.startswith("Train"):
+        for cart_type in list(cart_pack["cart types"]):
+            if cart_type.endswith("_nr") or cart_type.endswith("_nb"):
+                continue
+            stage[cart_type] = {
+                    "texture_name": cart_type+"_"+angle_list[facing]+",0.0",
+                    "texture_scale": [1, 1.18]
+            }
+    if menu == "new train":
         for cart_type in list(cart_pack["cart types"]):
             if cart_type.endswith("_nr") or cart_type.endswith("_nb"):
                 continue
@@ -119,54 +128,46 @@ def main_loop( cam, map, screen, trains_list, button_path,
                                     train.set_stopping("Toggle")
                                     break
                         continue
-                    if selected_build == "delete cart":
-                        train = ...
-                        pos_list = train.get_pos_list()
-                        for cart_pos in pos_list:
-                            if cart_pos == pos:
-                                # train.delete_cart() # TODO
-                                break
-
-
-                    if "rail" in selected_build:
+                    elif "rail" in selected_build:
                         const = Rail( selected_build, 
                                     facing_list[facing], constr_pack )
                         map.set_construction( pos, const )
                         cam.render_bg( map )
-                    if "station" in selected_build:
+                    elif "station" in selected_build:
                         const = Station( selected_build, 
                                     facing_list[facing], constr_pack, map, pos )
                         map.set_construction( pos, const )
                         cam.render_bg( map )
-                    if "tile" in selected_build:
+                    elif "tile" in selected_build:
                         map[ pos ][0].change_name( selected_build )
                         cam.render_bg( map )
-                    if "cart" in selected_build:
-                        train = ... # TODO
+                    elif "cart" in selected_build or "engine" in selected_build:
+                        train_name = button_path.split('/')[-1]
+                        if train_name.startswith("Train "):
+                            train_id = int(train_name.split()[-1])
+                            train = trains_list[train_id]
+                        else:
+                            train = Train(cart_pack, [])
+                            trains_list.append(train)
                         list_pos = [int(x) for x in pos.split(",")]
                         height = map[ pos ][0].get_height()
                         cart = Cart( cart_pack, selected_build, 
                                      facing_list[facing], list_pos, height )
-                        trains_list[i].add_cart(cart) # TODO
-                    if selected_build == "terrain up":
+                        train.add_cart(cart)
+                        if not train_name.startswith("Train "):
+                            temp_path = "/".join(button_path.split('/')[:-1])
+                            button_path = temp_path + "/Train " + str(len(trains_list)-1)
+                    elif selected_build == "terrain up":
                         map[ pos ][0].change_height(1)
                         cam.render_bg( map )
-                    if selected_build == "terrain down":
+                    elif selected_build == "terrain down":
                         map[ pos ][0].change_height(-1)
                         cam.render_bg( map )
                         
                 if event.button == 4: # scroll up
-                    if keys[ pygame.K_LSHIFT ]:
-                        selected_button += 1
-                        selected_button = min(len(rail_types)+len(cart_types)+len(station_types) , selected_button)
-                    else:
-                        cam.zoom_in(1)
+                    cam.zoom_in(1)
                 if event.button == 5: # scroll down
-                    if keys[ pygame.K_LSHIFT ]:
-                        selected_button -= 1
-                        selected_button = max(0, selected_button)
-                    else:
-                        cam.zoom_in(-1)
+                    cam.zoom_in(-1)
             if event.type == pygame.KEYDOWN:
                 for i in range(len(rail_types) + len(list(cart_pack["cart types"]))):
                     if event.key == (pygame.K_1 + i):
@@ -176,12 +177,21 @@ def main_loop( cam, map, screen, trains_list, button_path,
                                 button_pack, tile_list, trains_list, facing)
                         if not selected_build:
                             selected_button = 0
+                        if selected_build == "delete train":
+                            train_name = button_path.split('/')[-1]
+                            train_id = int(train_name.split()[-1])
+                            trains_list.pop(train_id)
+                            selected_button = 0
+                        if selected_build == "delete last cart":
+                            train_name = button_path.split('/')[-1]
+                            train_id = int(train_name.split()[-1])
+                            train = trains_list[train_id]
+                            if not train.delete_cart(-1):
+                                trains_list.pop(train_id)
+                            selected_button = 0
 
 
                 
-                if event.key == pygame.K_0:
-                    selected_tile = "default_tile" 
-                    selected_button = 0
                 if event.key == pygame.K_j:
                     cam.move_vert( -1, map )
                 if event.key == pygame.K_k:

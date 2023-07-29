@@ -141,6 +141,10 @@ class Station(Rail):
                     constr.add_station(self)
 
     def get_status(self):
+        if self.inventory:
+            self.status = "stopping"
+        else:
+            self.status = "come through"
         return self.status
     def set_status(self, status):
         self.status = status
