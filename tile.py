@@ -72,36 +72,35 @@ class Map:
             self.map[pos] = [tile, None]
         else:
             self.map[pos][0] = tile 
-    def set_construction(self, pos, constr):
+    def set_construction(self, pos, constr, check_surroundings=True):
         if not constr:
             return False
-        x, y = pos.split(',')
-        x, y = int(x), int(y)
-        height = self.map[pos][0].get_height()
-        required_tiles_dict = constr.get_required_tiles()
-        facing = constr.get_facing()
-        if "NESW" in required_tiles_dict:
-            required_tiles = required_tiles_dict["NESW"]
-        else:
-            required_tiles = required_tiles_dict[facing]
-        for tile in required_tiles:
-            test_pos = str(x + tile[0])+","+str(y + tile[1])
-            if self.map[test_pos][0].get_height() != height:
-                return False
-            data = constr.output_json()
-            data["constr_name"] += "_nr"
-            if constr.get_name() in list(self.constr_pack["rail types"]):
-                nr_constr = Rail('','', self.constr_pack)
-            elif constr.get_name() in list(self.constr_pack["station types"]):
-                nr_constr = Station('','', self.constr_pack)
-            nr_constr.input_dict(data)
-
-            if test_pos not in list(self.map):
-                self.map[test_pos] = [None, nr_constr]
+        if check_surroundings:
+            x, y = pos.split(',')
+            x, y = int(x), int(y)
+            height = self.map[pos][0].get_height()
+            required_tiles_dict = constr.get_required_tiles()
+            facing = constr.get_facing()
+            if "NESW" in required_tiles_dict:
+                required_tiles = required_tiles_dict["NESW"]
             else:
-                self.map[test_pos][1] = nr_constr
+                required_tiles = required_tiles_dict[facing]
+            for tile in required_tiles:
+                test_pos = str(x + tile[0])+","+str(y + tile[1])
+                if self.map[test_pos][0].get_height() != height:
+                    return False
+                data = constr.output_json()
+                data["constr_name"] += "_nr"
+                if constr.get_name() in list(self.constr_pack["rail types"]):
+                    nr_constr = Rail('','', self.constr_pack)
+                elif constr.get_name() in list(self.constr_pack["station types"]):
+                    nr_constr = Station('','', self.constr_pack)
+                nr_constr.input_dict(data)
 
-
+                if test_pos not in list(self.map):
+                    self.map[test_pos] = [None, nr_constr]
+                else:
+                    self.map[test_pos][1] = nr_constr
 
         if pos not in list(self.map):
             self.map[pos] = [None, constr]
@@ -151,8 +150,8 @@ class Map:
                 tile.input_dict(value)
                 if 'constr_name' in list(value):
                     if value["constr_type"] == "station":
-                        constr = Station('','', constr_pack)
-                    if value["constr_type"] == "factory":
+                        constr = Station('','', constr_pack, map, key)
+                    elif value["constr_type"] == "factory":
                         constr = Factory('','', constr_pack)
                         self.factory_list.append(constr)
                     else:
@@ -161,7 +160,8 @@ class Map:
                 else:
                     constr = None
                 self.set_tile( key, tile )
-                self.set_construction( key, constr )
+                self.set_construction( key, constr, 
+                        check_surroundings=False)
                     
         except FileNotFoundError:
         # if chunck hasn't been saved (it wasn't generated)

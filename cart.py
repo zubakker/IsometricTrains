@@ -60,8 +60,10 @@ class Cart:
         self.mass = cart_pack[ "cart types" ][ name ][ "mass" ]
         self.friction = cart_pack[ "cart types" ][ name ][ "friction" ]
         self.power = cart_pack[ "cart types" ][ name ][ "power" ]
+        self.inventory_space = cart_pack[ "cart types" ][ name ][ "inventory_space" ]
         self.texture_scale = cart_pack[ "cart types" ][ name ][ "texture_scale" ]
         self.texture_displacement = cart_pack[ "cart types" ][ name ][ "texture_displacement" ]
+        self.inventory = list()
         
         self.rotation = [{ 
                 "N": 0,
@@ -80,18 +82,8 @@ class Cart:
         return self.position
 
     def get_name_facing( self ):
-        ### TEMP ###
-        # if self.ramping_up:
-            # return self.name + "_up_" + self.facing
-        # if self.ramping_down:
-            # return self.name + "_down_" + self.facing
         return self.name + "_" + self.facing
     def get_status( self ):
-        ### TEMP ###
-        # if self.ramping_up:
-            # return "up_"
-        # if self.ramping_down:
-            # return "down_"
         return ""
     def get_pos( self ):
         return self.position
@@ -107,6 +99,8 @@ class Cart:
         if self.stopped:
             return 0
         return self.power - sin(self.rotation[1])*self.mass * GRAVITY
+    def get_inventory_space(self):
+        return self.inventory_space
     def get_texture_scale( self ):
         return self.texture_scale
     def get_texture_displacement( self ):
@@ -142,6 +136,7 @@ class Cart:
                 "facing": self.facing,
                 "position": self.position,
                 "stopped": self.stopped,
+                "inventory": self.inventory,
                 "rotation": self.rotation
                 }
         return output
@@ -151,19 +146,18 @@ class Cart:
         self.position = inp_dict["position"]
         self.rotation = inp_dict["rotation"]
         self.stopped = inp_dict["stopped"]
+        self.inventory = inp_dict["inventory"]
         self.mass = cart_pack[ "cart types" ][ self.name ][ "mass" ]
         self.friction = cart_pack[ "cart types" ][ self.name ][ "friction" ]
         self.power = cart_pack[ "cart types" ][ self.name ][ "power" ]
+        self.inventory_space = cart_pack[ "cart types" ][ self.name ][ "inventory_space" ]
         self.texture_scale = cart_pack[ "cart types" ][ self.name ][ "texture_scale" ]
         self.texture_displacement = cart_pack[ "cart types" ][ self.name ][ "texture_displacement" ]
     def input_json(self, json_txt, cart_pack):
         input = loads(json_txt)
         self.input_dict(input)
         
-    def update( self, map):
-        if self.stopped:
-            self.stopped = False
-            return 
+    def update(self, map, dont_move=False):
         negative_dict = {
                             "N": "S",
                             "S": "N",
@@ -185,17 +179,37 @@ class Cart:
             return True
         if constr.get_type() == "station" and \
                 abs(self.position[0] - round(self.position[0])) < self.speed and \
-                abs(self.position[1] - round(self.position[1])) < self.speed and \
-                constr.get_status() == "stopping":
-            self.position[0] = round(x)
-            self.position[1] = round(y)
-            # either goes off the rail or stops completely
-            # TEMP does nothing
-            self.stopped = True
-            return True
+                abs(self.position[1] - round(self.position[1])) < self.speed:
+            # and \
+            # constr.get_status() == "stopping":
+            for i, item in enumerate(self.inventory):
+                result = constr.load_item(item)
+                if result:
+                    # if at least one item in the inventory can be loaded
+                    # into station cart stops until it cannot be unloaded anymore
+                    if type(result) != bool:
+                        self.inventory.pop(i)
+                    self.position[0] = round(x)
+                    self.position[1] = round(y)
+                    self.stopped = True
+                    return True
+            if len(self.inventory) < self.inventory_space:
+                item = constr.unload_item()
+                if item:
+                    # cart stops if cart can be loaded and station can unload items
+                    self.position[0] = round(x)
+                    self.position[1] = round(y)
+                    if not type(item) == bool:
+                        self.inventory.append(item)
+                    self.stopped = True
+                    return True
+        if dont_move:
+            return False
+            
+
         x -= sin(pi*self.rotation[0]/2) * self.speed 
         y += cos(pi*self.rotation[0]/2) * self.speed 
-        self.height += sin(self.rotation[1]) * self.speed
+        self.height += sin(pi*self.rotation[1]/2) * self.speed
         if self.stopping and abs(round(x) - x) < self.speed and \
                 abs(round(y) - y) < self.speed:
             # either goes off the rail or stops completely
@@ -230,6 +244,8 @@ class Cart:
             self.rotation[0] = rotation[0]
         if rotation[1] != 'None':
             self.rotation[1] = rotation[1]
+            if rotation[1] == 0:
+                self.height = round(self.height)
 
 
         if not self.rotating:
@@ -291,11 +307,16 @@ class Train(Cart):
         for cart in self.carts:
             cart.set_speed(self.speed)
             if self.stopped:
-                cart.set_stopped( True )
+                cart.set_stopped(True)
             if self.stopping:
                 cart.set_stopping(self.stopping)
-            if cart.update(map):
+            if cart.update(map, dont_move=True):
                 self.stopped = True
+        if not self.stopped:
+            for cart in self.carts:
+                if cart.update(map):
+                    self.stopped = True
+
         if self.stopped:
             for cart in self.carts:
                 cart.set_stopped( True )

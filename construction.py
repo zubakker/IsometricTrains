@@ -72,10 +72,6 @@ class Rail(Construction):
         rel_dir_from = self.rel_directions[key_from]
         if rel_dir_from in list(self.rotate_to):
             angle_hor, angle_ver = self.rotate_to[rel_dir_from]
-            if angle_hor != 'None':
-                angle_hor *= pi/2
-            if angle_ver != 'None':
-                angle_ver *= pi/2
             return [angle_hor, angle_ver]
         else:
             return ['None', 'None']
@@ -123,9 +119,15 @@ class Rail(Construction):
 class Station(Rail):
     def __init__(self, name, facing, constr_pack, map, pos):
         super().__init__(name, facing, constr_pack, c_type="station")
-        self.status = "stopping" # TEMP
-        self.inventory_space = constr_pack[self.type + " types"][ self.name ]["inventory_space"]
+        if not name:
+            self.constr_pack = constr_pack
+            return 
+        self.update_counter = 0
+        self.inventory_space = constr_pack[self.type + " types"][ name ]["inventory_space"]
+        self.updated_per_item = constr_pack[self.type + " types"][ name ]["updated_per_item"]
         self.inventory = list()
+        self.not_loading = list()
+        self.not_unloading = list()
         self.accepted_items = 'ANY' # TEMP
         # check for adjustment factories
         self.factories = list()
@@ -168,9 +170,33 @@ class Station(Rail):
         if (self.accepted_items == 'ANY' or item in self.accepted_items) and \
                 len(self.inventory) < self.inventory_space:
             self.inventory.append(item)
+            if item not in self.not_loading:
+                self.not_loading.append(item)
             return True
         else:
             return False
+    def load_item(self, item):
+        if item in self.not_loading or len(self.inventory) == self.inventory_space:
+            return False
+        self.update_counter += 1
+        if self.update_counter >= self.updated_per_item:
+            self.update_counter = 0
+            self.inventory.append(item)
+            if item not in self.not_unloading:
+                self.not_unloading.append(item)
+            return "take item"
+        return True
+    def unload_item(self):
+        for i, item in enumerate(self.inventory):
+            if item not in self.not_unloading:
+                self.update_counter += 1
+                if self.update_counter >= self.updated_per_item:
+                    self.update_counter = 0
+                    self.inventory.pop(i)
+                    return item
+                return True
+        return False
+        
     def accepts_item(self, item):
         if not item:
             return False
@@ -179,6 +205,20 @@ class Station(Rail):
         elif item in self.accepted_items:
             return True
         return False
+    def input_dict(self, input):
+        super().input_dict(input)
+        self.inventory_space = self.constr_pack[self.type + " types"][ self.name ]["inventory_space"]
+        self.updated_per_item = self.constr_pack[self.type + " types"][ self.name ]["updated_per_item"]
+        self.update_counter = 0
+        self.inventory = input["constr_inventory"]
+        self.not_loading = input["constr_not_loading"]
+        self.not_unloading = input["constr_not_unloading"]
+    def output_json(self):
+        output = super().output_json()
+        output["constr_inventory"] = self.inventory
+        output["constr_not_loading"] = self.not_loading
+        output["constr_not_unloading"] = self.not_unloading
+        return output
 
 
 class Factory(Construction):

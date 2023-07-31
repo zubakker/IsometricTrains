@@ -4,7 +4,10 @@
 	    {
 		"come_from": ["Front", "Back"],
 		"rotate_by": {},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Front": ["None", 0.0],
+		    "Back":  ["None", 0.0]
+		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [1,1]},
 		"texture_displacement": {"NESW": [0,0]},
@@ -17,7 +20,10 @@
 				"Front": [-2, 0],
 				"Left": [2, 0]
 		},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Front": ["None", 0.0],
+		    "Left":  ["None", 0.0]
+		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [1,1]},
 		"texture_displacement": {"NESW": [0,0]},
@@ -30,7 +36,10 @@
 				"Front": [-1.5, 0],
 				"Left": [1.5, 0]
 		},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Front": ["None", 0.0],
+		    "Left":  ["None", 0.0]
+		},
 		"required_tiles": {
 		    "N": [[-1,0], [0,1]],
 		    "E": [[1,0], [0,1]],
@@ -63,7 +72,10 @@
 				"Front": [-0.5, 0],
 				"Left": [0.5, 0]
 		},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Front": ["None", 0.0],
+		    "Left":  ["None", 0.0]
+		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [0,0]},
 		"texture_displacement": {"NESW": [0,0]},
@@ -97,8 +109,8 @@
 		"come_from": ["Front", "Back"],
 		"rotate_by": {},
 		"rotate_to": {
-		    "Front": ["None", -0.25],
-		    "Back": ["None", 0.25]
+		    "Front": ["None", -0.3333],
+		    "Back": ["None", 0.3333]
 		},
 		"required_tiles": {
 		    "N": [[0,-1]],
@@ -130,8 +142,8 @@
 		"come_from": ["Front", "Back"],
 		"rotate_by": {},
 		"rotate_to": {
-		    "Front": ["None", -0.25],
-		    "Back": ["None", 0.25]
+		    "Front": ["None", -0.3333],
+		    "Back": ["None", 0.3333]
 		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [0,0]},
@@ -142,7 +154,10 @@
 	    {
 		"come_from": ["Front", "Back", "Left", "Right"],
 		"rotate_by": {},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Front": ["None", 0.0],
+		    "Back":  ["None", 0.0]
+		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [1,1]},
 		"texture_displacement": {"NESW": [0,0]},
@@ -152,7 +167,9 @@
 	    {
 		"come_from": ["Back"],
 		"rotate_by": {},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Back":  ["None", 0.0]
+		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [1,1]},
 		"texture_displacement": {"NESW": [0,0]},
@@ -164,8 +181,12 @@
 	    {
 		"inventory_space": 7,
 		"come_from": ["Front", "Back"],
+		"updated_per_item": 30,
 		"rotate_by": {},
-		"rotate_to": {},
+		"rotate_to": {
+		    "Front": ["None", 0.0],
+		    "Back":  ["None", 0.0]
+		},
 		"required_tiles": {"NESW": []},
 		"texture_scale": {"NESW": [1.5,1.5]},
 		"texture_displacement": {
